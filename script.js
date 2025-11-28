@@ -13,7 +13,6 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// Registra o Plugin do GSAP
 gsap.registerPlugin(ScrollTrigger);
 
 document.addEventListener('DOMContentLoaded', async function() {
@@ -24,30 +23,23 @@ document.addEventListener('DOMContentLoaded', async function() {
     let isDragging = false, startX = 0, startY = 0, translateX = 0, translateY = 0;
     window.listaDiariosGlobal = []; 
 
-    // --- ALGORITMO DE ÁRVORE FRACTAL (RAÍZES) ---
+    // --- ALGORITMO RAÍZES ---
     function generateRoots(startX, startY, angle, depth, branchWidth) {
         if (depth === 0) return "";
-
         const length = 30 + Math.random() * 30;
         const endX = startX + length * Math.cos(angle * Math.PI / 180);
         const endY = startY + length * Math.sin(angle * Math.PI / 180);
-
-        // Curva Bézier para os galhos
         const cp1x = startX + (endX - startX) * 0.5 + (Math.random() - 0.5) * 15;
         const cp1y = startY + (endY - startY) * 0.5;
-        
         let path = `M ${startX} ${startY} Q ${cp1x} ${cp1y} ${endX} ${endY} `;
-
         const subAngle1 = angle - 25 - Math.random() * 20;
         const subAngle2 = angle + 25 + Math.random() * 20;
-        
         path += generateRoots(endX, endY, subAngle1, depth - 1, branchWidth * 0.7);
         path += generateRoots(endX, endY, subAngle2, depth - 1, branchWidth * 0.7);
-
         return path;
     }
 
-    // --- DESENHAR LINHA TORTUOSA + RAÍZES ---
+    // --- DESENHAR LINHA + RAÍZES ---
     function montarAnimacaoLinha() {
         const svg = document.getElementById('ink-canvas');
         const path = document.getElementById('ink-path');
@@ -60,9 +52,8 @@ document.addEventListener('DOMContentLoaded', async function() {
 
         rootsGroup.innerHTML = "";
 
-        const timelineTop = timeline.getBoundingClientRect().top;
-        // Calcula a altura total até o final do rodapé
-        const totalHeight = (footer.getBoundingClientRect().bottom) - timelineTop + 50;
+        const timelineTop = timeline.offsetTop;
+        const totalHeight = (footer.offsetTop + footer.offsetHeight) - timelineTop;
         const width = timeline.offsetWidth;
         const isMobile = window.innerWidth <= 800;
         const centerX = isMobile ? 22 : width / 2;
@@ -70,73 +61,57 @@ document.addEventListener('DOMContentLoaded', async function() {
         svg.style.height = totalHeight + 'px';
         svg.setAttribute('viewBox', `0 0 ${width} ${totalHeight}`);
         
-        // --- NOVA LÓGICA DE LINHA TORTUOSA ---
+        // 1. LINHA TORTUOSA (Cursive)
         let d = `M ${centerX} 0`;
         let lastY = 0;
 
-        // Função auxiliar para desenhar um segmento tremido entre dois pontos Y
-        function drawTortuousSegment(targetY) {
-            let segmentPath = "";
-            const stepSize = 20; // Tamanho do "passo" do tremor
-            
-            while(lastY < targetY - stepSize) {
-                lastY += stepSize;
-                // Gera um desvio aleatório brusco (tremor)
-                const wobbleX = (Math.random() - 0.5) * 25; 
-                // Usa linha reta (L) em vez de curva para ficar tremido
-                segmentPath += ` L ${centerX + wobbleX} ${lastY}`;
-            }
-            // Conecta ao ponto final exato
-            segmentPath += ` L ${centerX} ${targetY}`;
-            lastY = targetY;
-            return segmentPath;
-        }
-
-        // 1. Desenha linha tortuosa entre os cards
         cards.forEach((card) => {
-            const cardTopRelative = card.getBoundingClientRect().top - timelineTop;
-            const dotY = cardTopRelative + 45;
-            d += drawTortuousSegment(dotY);
+            const cardTop = card.offsetTop;
+            const dotY = cardTop + 45; 
+            
+            // Desenha com curvas suaves até o card
+            const midY = (lastY + dotY) / 2;
+            const controlX = centerX + (Math.random() - 0.5) * 40; // Aumentei o "Wobble" para ficar mais torto
+            
+            d += ` Q ${controlX} ${midY}, ${centerX} ${dotY}`;
+            lastY = dotY;
         });
 
-        // 2. Calcula o centro do texto do rodapé
-        const footerText = footer.querySelector('p');
-        const footerTextRect = footerText.getBoundingClientRect();
-        // Calcula o centro vertical da caixa de texto relativo à timeline
-        const footerCenterY = (footerTextRect.top + footerTextRect.height/2) - timelineTop;
-
-        // Desenha linha tortuosa até o centro do texto do rodapé
-        d += drawTortuousSegment(footerCenterY);
+        // Conecta até o rodapé
+        const footerY = totalHeight - 80;
+        d += ` L ${centerX} ${footerY}`;
         path.setAttribute('d', d);
 
-        // 3. GERAR RAÍZES (Começando exatamente atrás do texto)
-        const rootsPathData = generateRoots(centerX, footerCenterY, 90, 5, 4);
+        // 2. GERAR RAÍZES
+        const rootsPathData = generateRoots(centerX, footerY, 90, 5, 4);
         
         const rootsPathElement = document.createElementNS("http://www.w3.org/2000/svg", "path");
         rootsPathElement.setAttribute("d", rootsPathData);
         rootsGroup.appendChild(rootsPathElement);
 
-        // --- ANIMAÇÃO GSAP ---
-        // Linha Principal
+        // 3. ANIMAÇÃO GSAP
         const length = path.getTotalLength();
         gsap.set(path, { strokeDasharray: length, strokeDashoffset: length });
         
-        ScrollTrigger.create({
-            trigger: "#timeline",
-            start: "top center",
-            end: () => `+=${footerCenterY}`, // Termina no centro do rodapé
-            scrub: 1,
-            animation: gsap.to(path, { strokeDashoffset: 0, ease: "none" })
+        gsap.to(path, {
+            strokeDashoffset: 0,
+            ease: "none",
+            scrollTrigger: {
+                trigger: "#timeline",
+                start: "top center",
+                end: "bottom bottom",
+                scrub: 1
+            }
         });
 
-        // Raízes (Explodem quando chegam no rodapé)
         const rootsLength = rootsPathElement.getTotalLength();
         gsap.set(rootsPathElement, { strokeDasharray: rootsLength, strokeDashoffset: rootsLength });
 
+        const footerP = footer.querySelector('p');
         ScrollTrigger.create({
-            trigger: footerText, // Gatilho é o próprio texto
-            start: "center center", // Quando o centro do texto chega no centro da tela
-            end: "bottom top",
+            trigger: footerP, // Dispara exatamente no texto do footer
+            start: "top bottom",
+            end: "bottom bottom",
             scrub: 1.5,
             animation: gsap.to(rootsPathElement, { strokeDashoffset: 0, ease: "power2.out" })
         });
@@ -162,16 +137,21 @@ document.addEventListener('DOMContentLoaded', async function() {
                 const anoAtual = item.data.split('-')[0];
                 if (anoAtual !== ultimoAno) {
                     const divisor = document.createElement('div');
-                    divisor.className = 'year-divider timeline-element';
+                    divisor.className = 'year-divider timeline-card'; // Importante para o GSAP detectar
                     divisor.innerHTML = `<span>${anoAtual}</span>`;
                     timelineContent.appendChild(divisor);
                     ultimoAno = anoAtual;
                 }
 
                 const article = document.createElement('article');
-                article.className = 'timeline-card timeline-element';
+                article.className = 'timeline-card';
                 const imgUrl = converterLinkDrive(item.imagem);
                 let iconHtml = (item.imagem2) ? `<div class="multi-icon"><span class="material-icons">collections</span></div>` : "";
+
+                // --- ESPAÇAMENTO ALEATÓRIO (ORGANIC RHYTHM) ---
+                // Gera um espaçamento entre 100px e 250px
+                const randomMargin = Math.floor(Math.random() * (250 - 100 + 1) + 100);
+                article.style.marginBottom = `${randomMargin}px`;
 
                 article.innerHTML = `
                     <div class="card-header"><span class="card-date">${formatarDataExtenso(item.data)}</span></div>
@@ -186,32 +166,34 @@ document.addEventListener('DOMContentLoaded', async function() {
                 timelineContent.appendChild(article);
             });
 
-            // GSAP E RECARREGAMENTO
+            // GSAP ANIMATIONS
             setTimeout(() => {
-                ScrollTrigger.refresh();
                 montarAnimacaoLinha();
                 
+                // Animação de entrada dos cards
                 gsap.utils.toArray('.timeline-card').forEach(card => {
                     gsap.fromTo(card, 
                         { opacity: 0, y: 50 },
-                        { opacity: 1, y: 0, duration: 0.8, scrollTrigger: { trigger: card, start: "top 85%" } }
+                        { 
+                            opacity: 1, y: 0, duration: 0.8, 
+                            scrollTrigger: { trigger: card, start: "top 85%" } 
+                        }
                     );
                 });
 
                 window.addEventListener('resize', () => {
                     clearTimeout(window.resizeTimer);
                     window.resizeTimer = setTimeout(() => {
-                        ScrollTrigger.refresh(); // Recalcula posições do GSAP
+                        ScrollTrigger.refresh();
                         montarAnimacaoLinha();
                     }, 200);
                 });
-                 // Força atualização extra após carregar tudo
                 window.addEventListener('load', () => ScrollTrigger.refresh());
-            }, 1000); 
+            }, 800); 
         }
     } catch (e) { console.error(e); }
 
-    // --- FUNÇÕES UTILITÁRIAS (Mantidas iguais) ---
+    // --- FUNÇÕES UTILITÁRIAS (Mantidas) ---
     function converterLinkDrive(link) {
         if (!link) return "";
         link = link.trim();
@@ -221,6 +203,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         }
         return link;
     }
+    
     function formatarDataExtenso(d) {
         if (!d) return "";
         const p = d.split('-');
@@ -231,7 +214,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         return d;
     }
 
-    // Modal, Zoom, Drag e Voz
+    // Modal, Zoom, Drag
     window.aplicarZoom = function(f) { zoomLevel += f; if (zoomLevel < 1) { zoomLevel = 1; translateX = 0; translateY = 0; } if (zoomLevel > 4) zoomLevel = 4; atualizarTransformacao(); }
     function resetarZoom() { zoomLevel = 1; translateX = 0; translateY = 0; atualizarTransformacao(); }
     function atualizarTransformacao() { const img = document.getElementById('modal-img'); if(img) img.style.transform = `translate(${translateX}px, ${translateY}px) scale(${zoomLevel})`; }
@@ -241,6 +224,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         window.addEventListener('mouseup', () => { isDragging=false; if(imgModal) imgModal.style.cursor='grab'; });
         window.addEventListener('mousemove', (e) => { if(!isDragging) return; e.preventDefault(); translateX=e.clientX-startX; translateY=e.clientY-startY; atualizarTransformacao(); });
     }
+
     window.abrirModal = function(i) {
         const item = window.listaDiariosGlobal[i]; if(!item) return;
         imagensAtuais = [];
@@ -254,6 +238,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         if (item.descricao) txt.innerHTML += `<div class="section-descricao"><h4>Contexto</h4><p>${item.descricao}</p><button class="narrate-btn" onclick="lerTexto('${escapar(item.descricao)}')"><span class="material-icons">volume_up</span> Ouvir</button></div>`;
         document.getElementById('image-modal').classList.remove('hidden'); document.body.style.overflow = "hidden";
     }
+    
     window.mudarFoto = function(d) { let n = indiceFotoAtual + d; if(n >= 0 && n < imagensAtuais.length) { indiceFotoAtual = n; resetarZoom(); atualizarImagemModal(); } }
     function atualizarImagemModal() {
         document.getElementById('modal-img').src = imagensAtuais[indiceFotoAtual];
@@ -261,10 +246,12 @@ document.addEventListener('DOMContentLoaded', async function() {
         if(imagensAtuais.length > 1) { ctr.classList.remove('hidden'); ctr.innerText = `${indiceFotoAtual+1} / ${imagensAtuais.length}`; p.classList.toggle('hidden', indiceFotoAtual===0); n.classList.toggle('hidden', indiceFotoAtual===imagensAtuais.length-1); } else { ctr.classList.add('hidden'); p.classList.add('hidden'); n.classList.add('hidden'); }
     }
     window.fecharModal = function(e, f) { if(f || e.target.id === 'image-modal') { document.getElementById('image-modal').classList.add('hidden'); document.body.style.overflow = "auto"; resetarZoom(); window.speechSynthesis.cancel(); } }
+    
     function carregarVozes() { let v = window.speechSynthesis.getVoices(); if(v.length===0)return; const p=["Google Português", "Microsoft Francisca", "Luciana"]; for(let n of p){ vozSelecionada=v.find(i=>i.name.includes(n)); if(vozSelecionada)break; } if(!vozSelecionada) vozSelecionada=v.find(i=>i.lang==='pt-BR'); }
     if(speechSynthesis.onvoiceschanged !== undefined) speechSynthesis.onvoiceschanged = carregarVozes; setTimeout(carregarVozes, 500);
     window.lerTexto = function(t) { window.speechSynthesis.cancel(); if(!vozSelecionada) carregarVozes(); const u = new SpeechSynthesisUtterance(t); if(vozSelecionada) u.voice = vozSelecionada; u.lang = "pt-BR"; u.rate = 1.1; window.speechSynthesis.speak(u); }
     function escapar(s) { return s.replace(/'/g, "\\'").replace(/"/g, '"').replace(/\n/g, ' '); }
+
     const btnC = document.getElementById('btn-contrast'); if(btnC) btnC.addEventListener('click', () => document.body.classList.toggle('high-contrast'));
     let fs = 100;
     const btnP = document.getElementById('btn-font-plus'); if(btnP) btnP.addEventListener('click', () => { if(fs<150) fs+=10; document.body.style.fontSize = fs+'%'; });
