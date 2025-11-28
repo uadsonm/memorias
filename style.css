@@ -62,17 +62,15 @@ body.page-loading { opacity: 0; transition: opacity 1s ease; }
     overflow: visible;
 }
 
-/* Estilo da Linha "Tinteiro" */
 .ink-path {
     fill: none;
     stroke: var(--ink-color);
-    stroke-width: 2.5px; /* Um pouco mais grossa para notar o tremor */
+    stroke-width: 2.5px;
     stroke-linecap: round;
     stroke-linejoin: round;
     opacity: 0.9;
 }
 
-/* Raízes mais finas */
 #roots-group path {
     fill: none;
     stroke: var(--ink-color);
@@ -84,11 +82,22 @@ body.page-loading { opacity: 0; transition: opacity 1s ease; }
 
 .timeline-content { position: relative; z-index: 2; width: 100%; }
 
-/* Divisores e Cards */
+/* Divisores */
 .year-divider { display: flex; justify-content: center; align-items: center; width: 100%; margin: 100px 0; clear: both; position: relative; }
 .year-divider span { background: var(--ink-color); color: #fff; font-family: var(--font-title); font-size: 1.8rem; padding: 5px 30px; border-radius: 50px; font-style: italic; box-shadow: 0 4px 10px rgba(0,0,0,0.2); z-index: 5; border: 1px solid rgba(255,255,255,0.1); }
 
-.timeline-card { background: var(--card-bg); width: 45%; padding: 30px; position: relative; margin-bottom: 150px; box-shadow: 0 10px 30px rgba(74, 59, 50, 0.08); border-radius: 2px; border: 1px solid rgba(0,0,0,0.02); z-index: 1; }
+/* CARDS (Alterado: Removemos margin-bottom fixo) */
+.timeline-card { 
+    background: var(--card-bg); 
+    width: 45%; 
+    padding: 30px; 
+    position: relative; 
+    /* margin-bottom REMOVIDO daqui - será injetado pelo JS aleatoriamente */
+    box-shadow: 0 10px 30px rgba(74, 59, 50, 0.08); 
+    border-radius: 2px; 
+    border: 1px solid rgba(0,0,0,0.02); 
+    z-index: 1; 
+}
 
 .timeline-card:nth-child(odd) { float: left; clear: right; text-align: right; }
 .timeline-card:nth-child(even) { float: right; clear: left; text-align: left; }
@@ -128,17 +137,8 @@ body.page-loading { opacity: 0; transition: opacity 1s ease; }
 .close-modal-btn { position: absolute; top: 20px; right: 30px; font-size: 2.5rem; background: none; border: none; cursor: pointer; color: var(--text-color); opacity: 0.5; }
 
 /* Rodapé */
-footer { 
-    text-align: center; padding: 100px 20px 40px 20px; color: var(--text-light); 
-    margin-top: 0; clear: both; background: transparent; 
-    position: relative; z-index: 5; /* Z-index alto para ficar sobre as raízes */
-}
-/* Fundo do texto do rodapé para tapar as raízes */
-footer p { 
-    background: rgba(232, 224, 213, 0.95); 
-    display: inline-block; padding: 8px 20px; border-radius: 4px; 
-    border: 1px solid rgba(0,0,0,0.05);
-}
+footer { text-align: center; padding: 100px 20px 40px 20px; color: var(--text-light); margin-top: 0; clear: both; background: transparent; position: relative; z-index: 2; }
+footer p { background: rgba(232, 224, 213, 0.95); display: inline-block; padding: 8px 20px; border-radius: 4px; border: 1px solid rgba(0,0,0,0.05); }
 
 @media (max-width: 800px) {
     .timeline-card { width: 100%; float: none; text-align: left !important; margin-bottom: 50px; padding-left: 60px; }
