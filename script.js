@@ -28,20 +28,18 @@ document.addEventListener('DOMContentLoaded', async function() {
     function generateRoots(startX, startY, angle, depth, branchWidth) {
         if (depth === 0) return "";
 
-        // Ponto final do galho atual
-        const length = 40 + Math.random() * 30; // Comprimento aleatório
+        const length = 30 + Math.random() * 30;
         const endX = startX + length * Math.cos(angle * Math.PI / 180);
         const endY = startY + length * Math.sin(angle * Math.PI / 180);
 
-        // Desenha linha curva (Bézier) para parecer orgânico
-        const cp1x = startX + (endX - startX) * 0.5 + (Math.random() - 0.5) * 20;
+        // Curva Bézier para os galhos
+        const cp1x = startX + (endX - startX) * 0.5 + (Math.random() - 0.5) * 15;
         const cp1y = startY + (endY - startY) * 0.5;
         
         let path = `M ${startX} ${startY} Q ${cp1x} ${cp1y} ${endX} ${endY} `;
 
-        // Recursão: Cria 2 sub-galhos
-        const subAngle1 = angle - 20 - Math.random() * 20;
-        const subAngle2 = angle + 20 + Math.random() * 20;
+        const subAngle1 = angle - 25 - Math.random() * 20;
+        const subAngle2 = angle + 25 + Math.random() * 20;
         
         path += generateRoots(endX, endY, subAngle1, depth - 1, branchWidth * 0.7);
         path += generateRoots(endX, endY, subAngle2, depth - 1, branchWidth * 0.7);
@@ -49,7 +47,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         return path;
     }
 
-    // --- DESENHAR LINHA + RAÍZES COM GSAP ---
+    // --- DESENHAR LINHA TORTUOSA + RAÍZES ---
     function montarAnimacaoLinha() {
         const svg = document.getElementById('ink-canvas');
         const path = document.getElementById('ink-path');
@@ -60,11 +58,11 @@ document.addEventListener('DOMContentLoaded', async function() {
         
         if (!svg || !cards.length || !footer) return;
 
-        // Limpa desenhos anteriores (caso de resize)
         rootsGroup.innerHTML = "";
 
-        const timelineTop = timeline.offsetTop;
-        const totalHeight = (footer.offsetTop + footer.offsetHeight) - timelineTop;
+        const timelineTop = timeline.getBoundingClientRect().top;
+        // Calcula a altura total até o final do rodapé
+        const totalHeight = (footer.getBoundingClientRect().bottom) - timelineTop + 50;
         const width = timeline.offsetWidth;
         const isMobile = window.innerWidth <= 800;
         const centerX = isMobile ? 22 : width / 2;
@@ -72,67 +70,75 @@ document.addEventListener('DOMContentLoaded', async function() {
         svg.style.height = totalHeight + 'px';
         svg.setAttribute('viewBox', `0 0 ${width} ${totalHeight}`);
         
-        // 1. LINHA PRINCIPAL (Cursive)
+        // --- NOVA LÓGICA DE LINHA TORTUOSA ---
         let d = `M ${centerX} 0`;
         let lastY = 0;
 
+        // Função auxiliar para desenhar um segmento tremido entre dois pontos Y
+        function drawTortuousSegment(targetY) {
+            let segmentPath = "";
+            const stepSize = 20; // Tamanho do "passo" do tremor
+            
+            while(lastY < targetY - stepSize) {
+                lastY += stepSize;
+                // Gera um desvio aleatório brusco (tremor)
+                const wobbleX = (Math.random() - 0.5) * 25; 
+                // Usa linha reta (L) em vez de curva para ficar tremido
+                segmentPath += ` L ${centerX + wobbleX} ${lastY}`;
+            }
+            // Conecta ao ponto final exato
+            segmentPath += ` L ${centerX} ${targetY}`;
+            lastY = targetY;
+            return segmentPath;
+        }
+
+        // 1. Desenha linha tortuosa entre os cards
         cards.forEach((card) => {
-            const cardTop = card.offsetTop;
-            const dotY = cardTop + 45; 
-            
-            // Desenha com curvas suaves até o card
-            const midY = (lastY + dotY) / 2;
-            // Wobble (Tremor) na curva
-            const controlX = centerX + (Math.random() - 0.5) * 30; 
-            
-            d += ` Q ${controlX} ${midY}, ${centerX} ${dotY}`;
-            lastY = dotY;
+            const cardTopRelative = card.getBoundingClientRect().top - timelineTop;
+            const dotY = cardTopRelative + 45;
+            d += drawTortuousSegment(dotY);
         });
 
-        // Conecta até o rodapé
-        const footerY = totalHeight - 80;
-        d += ` L ${centerX} ${footerY}`;
+        // 2. Calcula o centro do texto do rodapé
+        const footerText = footer.querySelector('p');
+        const footerTextRect = footerText.getBoundingClientRect();
+        // Calcula o centro vertical da caixa de texto relativo à timeline
+        const footerCenterY = (footerTextRect.top + footerTextRect.height/2) - timelineTop;
+
+        // Desenha linha tortuosa até o centro do texto do rodapé
+        d += drawTortuousSegment(footerCenterY);
         path.setAttribute('d', d);
 
-        // 2. GERAR RAÍZES NO FINAL
-        const rootsPathData = generateRoots(centerX, footerY, 90, 4, 3); // 90 graus = para baixo
+        // 3. GERAR RAÍZES (Começando exatamente atrás do texto)
+        const rootsPathData = generateRoots(centerX, footerCenterY, 90, 5, 4);
+        
         const rootsPathElement = document.createElementNS("http://www.w3.org/2000/svg", "path");
         rootsPathElement.setAttribute("d", rootsPathData);
-        rootsPathElement.setAttribute("stroke", "var(--ink-color)");
-        rootsPathElement.setAttribute("stroke-width", "1.5");
-        rootsPathElement.setAttribute("fill", "none");
-        rootsPathElement.setAttribute("stroke-linecap", "round");
         rootsGroup.appendChild(rootsPathElement);
 
-        // 3. ANIMAÇÃO GSAP (SCROLLTRIGGER)
-        // Anima a linha principal
+        // --- ANIMAÇÃO GSAP ---
+        // Linha Principal
         const length = path.getTotalLength();
         gsap.set(path, { strokeDasharray: length, strokeDashoffset: length });
         
-        gsap.to(path, {
-            strokeDashoffset: 0,
-            ease: "none",
-            scrollTrigger: {
-                trigger: "#timeline",
-                start: "top center",
-                end: "bottom bottom",
-                scrub: 1 // Suavidade de 1 segundo
-            }
+        ScrollTrigger.create({
+            trigger: "#timeline",
+            start: "top center",
+            end: () => `+=${footerCenterY}`, // Termina no centro do rodapé
+            scrub: 1,
+            animation: gsap.to(path, { strokeDashoffset: 0, ease: "none" })
         });
 
-        // Anima as raízes (surgem quando chegar no fim)
+        // Raízes (Explodem quando chegam no rodapé)
         const rootsLength = rootsPathElement.getTotalLength();
         gsap.set(rootsPathElement, { strokeDasharray: rootsLength, strokeDashoffset: rootsLength });
 
-        gsap.to(rootsPathElement, {
-            strokeDashoffset: 0,
-            ease: "power2.inOut",
-            scrollTrigger: {
-                trigger: "footer",
-                start: "top bottom", // Quando o topo do footer entra na tela
-                end: "bottom bottom",
-                scrub: 1
-            }
+        ScrollTrigger.create({
+            trigger: footerText, // Gatilho é o próprio texto
+            start: "center center", // Quando o centro do texto chega no centro da tela
+            end: "bottom top",
+            scrub: 1.5,
+            animation: gsap.to(rootsPathElement, { strokeDashoffset: 0, ease: "power2.out" })
         });
     }
 
@@ -180,31 +186,32 @@ document.addEventListener('DOMContentLoaded', async function() {
                 timelineContent.appendChild(article);
             });
 
-            // GSAP ANIMATIONS FOR CARDS
+            // GSAP E RECARREGAMENTO
             setTimeout(() => {
+                ScrollTrigger.refresh();
                 montarAnimacaoLinha();
                 
-                // Animação de entrada dos cards usando GSAP (mais robusto que IntersectionObserver)
                 gsap.utils.toArray('.timeline-card').forEach(card => {
                     gsap.fromTo(card, 
                         { opacity: 0, y: 50 },
-                        { 
-                            opacity: 1, y: 0, duration: 0.8, 
-                            scrollTrigger: { trigger: card, start: "top 85%" } 
-                        }
+                        { opacity: 1, y: 0, duration: 0.8, scrollTrigger: { trigger: card, start: "top 85%" } }
                     );
                 });
 
                 window.addEventListener('resize', () => {
-                    // Debounce simples para não travar no resize
                     clearTimeout(window.resizeTimer);
-                    window.resizeTimer = setTimeout(montarAnimacaoLinha, 200);
+                    window.resizeTimer = setTimeout(() => {
+                        ScrollTrigger.refresh(); // Recalcula posições do GSAP
+                        montarAnimacaoLinha();
+                    }, 200);
                 });
-            }, 800); 
+                 // Força atualização extra após carregar tudo
+                window.addEventListener('load', () => ScrollTrigger.refresh());
+            }, 1000); 
         }
     } catch (e) { console.error(e); }
 
-    // --- FUNÇÕES UTILITÁRIAS ---
+    // --- FUNÇÕES UTILITÁRIAS (Mantidas iguais) ---
     function converterLinkDrive(link) {
         if (!link) return "";
         link = link.trim();
@@ -224,7 +231,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         return d;
     }
 
-    // Modal, Zoom, Drag e Voz (Mantidos iguais, só compactados)
+    // Modal, Zoom, Drag e Voz
     window.aplicarZoom = function(f) { zoomLevel += f; if (zoomLevel < 1) { zoomLevel = 1; translateX = 0; translateY = 0; } if (zoomLevel > 4) zoomLevel = 4; atualizarTransformacao(); }
     function resetarZoom() { zoomLevel = 1; translateX = 0; translateY = 0; atualizarTransformacao(); }
     function atualizarTransformacao() { const img = document.getElementById('modal-img'); if(img) img.style.transform = `translate(${translateX}px, ${translateY}px) scale(${zoomLevel})`; }
