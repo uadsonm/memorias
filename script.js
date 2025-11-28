@@ -1,7 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-// SUAS CHAVES DO PROJETO 'MEMORIAS-FINAL'
 const firebaseConfig = {
     apiKey: "AIzaSyAJA22Ozc0EOHMAlVBr7TBnR6nHuyEHenA",
     authDomain: "memorias-final.firebaseapp.com",
@@ -16,112 +15,107 @@ const db = getFirestore(app);
 
 document.addEventListener('DOMContentLoaded', async function() {
     
-    // Entrada Suave
     setTimeout(() => { document.body.classList.remove('page-loading'); }, 100);
 
     let imagensAtuais = [], indiceFotoAtual = 0, vozSelecionada = null, zoomLevel = 1;
     let isDragging = false, startX = 0, startY = 0, translateX = 0, translateY = 0;
     window.listaDiariosGlobal = []; 
 
-    // --- DESENHAR LINHA + RAÍZES (Corrigido para recalcular sempre) ---
-    function desenharLinhaDoTempo() {
-        const svg = document.getElementById('ink-line-svg');
+    // --- GERADOR DE LINHA ORGÂNICA (TINTA) ---
+    function desenharLinhaTinteiro() {
+        const svg = document.getElementById('ink-canvas');
         const path = document.getElementById('ink-path');
         const timeline = document.getElementById('timeline');
-        const footer = document.querySelector('footer'); 
+        const footer = document.querySelector('footer');
         const cards = document.querySelectorAll('.timeline-card');
         
-        // Se ainda não tem cards ou elementos, não desenha
-        if (!svg || !timeline || cards.length === 0 || !footer) return;
+        if (!svg || !timeline || cards.length === 0) return;
 
-        // Calcula a altura total ATUALIZADA (Considerando imagens carregadas)
-        // A linha vai do topo da timeline até o final do texto do rodapé
+        // Calcula coordenadas
         const footerRect = footer.getBoundingClientRect();
         const timelineRect = timeline.getBoundingClientRect();
+        const timelineTop = timeline.offsetTop;
         
-        // Pega a posição relativa correta
-        const timelineOffsetTop = timeline.offsetTop;
-        const footerOffsetTop = footer.offsetTop;
-        const footerHeight = footer.offsetHeight;
-
-        const totalHeight = (footerOffsetTop + footerHeight) - timelineOffsetTop;
+        // A linha vai até o fim do footer
+        const totalHeight = (footer.offsetTop + footer.offsetHeight) - timelineTop;
         const width = timeline.offsetWidth;
-        
         const isMobile = window.innerWidth <= 800;
+        
+        // Centro da linha (no meio ou esquerda no mobile)
         const centerX = isMobile ? 22 : width / 2;
         
-        // Atualiza o tamanho do SVG
         svg.style.height = totalHeight + 'px';
         svg.setAttribute('viewBox', `0 0 ${width} ${totalHeight}`);
         
-        // 1. DESENHAR CORPO DA LINHA
+        // COMEÇO DO DESENHO
         let d = `M ${centerX} 0`;
-        let y = 0;
+        let currentY = 0;
 
-        cards.forEach((card) => {
-            // Pega a posição exata da bolinha do card
-            const cardTop = card.offsetTop;
-            const dotY = cardTop + 45; // 45px é o ajuste para o centro da bolinha
+        // Função para criar linha "tremida" entre dois pontos
+        // Simula a mão humana que não faz linha 100% reta
+        function drawOrganicLineTo(targetY) {
+            let pathString = "";
+            const step = 20; // A cada 20px faz um pequeno desvio
             
-            // Loop para criar linha irregular até o card
-            while (y < dotY - 50) {
-                let nextY = y + 40 + Math.random() * 20;
-                if(nextY > dotY) nextY = dotY;
+            while(currentY < targetY) {
+                let nextY = currentY + step;
+                if(nextY > targetY) nextY = targetY;
                 
-                let widthLoop = 10 + Math.random() * 10;
-                let direction = (Math.random() > 0.5) ? 1 : -1;
-                if (isMobile) widthLoop = 3; // Curvas mais sutis no celular
-
-                let cp1x = centerX + (widthLoop * direction);
-                let cp1y = y + 10;
-                let cp2x = centerX - (widthLoop * direction);
-                let cp2y = nextY - 10;
+                // Jitter (Tremor) aleatório
+                // No mobile treme menos para caber
+                const jitter = (Math.random() - 0.5) * (isMobile ? 1 : 2); 
+                const cpX = centerX + jitter;
                 
-                d += ` C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${centerX} ${nextY}`;
-                y = nextY;
+                pathString += ` L ${cpX} ${nextY}`;
+                currentY = nextY;
             }
-            // Garante conexão reta final com a bolinha
+            return pathString;
+        }
+
+        // 1. Passar por cada card
+        cards.forEach((card) => {
+            const cardTop = card.offsetTop;
+            const dotY = cardTop + 45; // Alinha com a bolinha
+            
+            // Desenha linha orgânica até a bolinha
+            d += drawOrganicLineTo(dotY);
+            
+            // Garante ponto exato na bolinha
             d += ` L ${centerX} ${dotY}`;
-            y = dotY;
+            currentY = dotY;
         });
 
-        // 2. DESENHAR ATÉ O RODAPÉ
-        // Vai até um pouco antes do texto do rodapé
-        const footerTargetY = totalHeight - 60; 
-        d += ` L ${centerX} ${footerTargetY}`;
-        
-        // 3. RAÍZES (Ajustadas para ficarem atrás do texto)
-        const rootStartY = footerTargetY;
-        const spread = isMobile ? 40 : 150;
-        
-        // Raiz central
-        d += ` M ${centerX} ${rootStartY} C ${centerX} ${rootStartY+30}, ${centerX} ${rootStartY+60}, ${centerX} ${rootStartY+80}`;
-        // Raízes laterais
-        d += ` M ${centerX} ${rootStartY} C ${centerX-20} ${rootStartY+20}, ${centerX-spread/2} ${rootStartY+50}, ${centerX-spread} ${rootStartY+80}`;
-        d += ` M ${centerX} ${rootStartY} C ${centerX+20} ${rootStartY+20}, ${centerX+spread/2} ${rootStartY+50}, ${centerX+spread} ${rootStartY+80}`;
-        
+        // 2. Ir até o fim do rodapé
+        const endY = totalHeight - 20;
+        d += drawOrganicLineTo(endY);
+
         path.setAttribute('d', d);
 
-        // Animação de Scroll (Atualiza o desenho conforme rola)
+        // CONFIGURAÇÃO DA ANIMAÇÃO DE SCROLL
         const length = path.getTotalLength();
         path.style.strokeDasharray = length;
-        path.style.strokeDashoffset = length; // Começa "apagada"
+        path.style.strokeDashoffset = length; // Começa invisível
 
-        // Remove listener antigo para não acumular
-        window.removeEventListener('scroll', window.fnScrollAnim);
-        
-        window.fnScrollAnim = () => {
+        // Remove listener antigo
+        if (window.scrollAnim) window.removeEventListener('scroll', window.scrollAnim);
+
+        window.scrollAnim = () => {
             const scrollTop = window.scrollY;
-            const docHeight = document.body.scrollHeight - window.innerHeight;
-            const scrollPercent = scrollTop / docHeight;
+            const windowHeight = window.innerHeight;
+            const docHeight = document.body.scrollHeight;
             
-            // Desenha um pouco mais rápido que o scroll (1.2x) para a linha sempre estar à frente
-            const draw = length * (scrollPercent * 1.2); 
+            // Calcula porcentagem do scroll
+            // Usamos um fator para que a linha termine de desenhar quando o footer aparecer
+            const scrollPercent = (scrollTop + windowHeight * 0.5) / (docHeight);
+            
+            // Acelera um pouco (1.3x) para a tinta estar sempre "chegando" onde o olho vê
+            const draw = length * (scrollPercent * 1.5);
+            
             path.style.strokeDashoffset = Math.max(0, length - draw);
         };
 
-        window.addEventListener('scroll', window.fnScrollAnim);
-        window.fnScrollAnim(); // Executa uma vez para garantir
+        window.addEventListener('scroll', window.scrollAnim);
+        window.scrollAnim(); // Executa uma vez
     }
 
     // --- CARREGAR DADOS ---
@@ -131,10 +125,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         const querySnapshot = await getDocs(collection(db, "diarios"));
         let lista = [];
         querySnapshot.forEach((doc) => lista.push(doc.data()));
-        
-        // ORDENAÇÃO CRONOLÓGICA IMPORTANTE
         lista.sort((a, b) => new Date(a.data) - new Date(b.data));
-        
         window.listaDiariosGlobal = lista;
 
         if (timelineContent) {
@@ -171,38 +162,28 @@ document.addEventListener('DOMContentLoaded', async function() {
                 timelineContent.appendChild(article);
             });
 
-            // --- CORREÇÃO DO CARREGAMENTO DA LINHA ---
-            // 1. Desenha imediatamente
+            // Delay para garantir renderização correta das posições
             setTimeout(() => {
-                desenharLinhaDoTempo();
-                ativarObservador();
-            }, 500);
-
-            // 2. VIGIA O TAMANHO DA PÁGINA (ResizeObserver)
-            // Se imagens carregarem e aumentarem a página, redesenha a linha
-            const observerTamanho = new ResizeObserver(() => {
-                desenharLinhaDoTempo();
-            });
-            // Observa o container da timeline e o body
-            observerTamanho.observe(document.getElementById('timeline'));
-            observerTamanho.observe(document.body);
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add('visible'); });
+                }, { threshold: 0.1 });
+                document.querySelectorAll('.timeline-element').forEach(c => observer.observe(c));
+                
+                // Desenha a linha
+                desenharLinhaTinteiro();
+                
+                // Redesenha se mudar tamanho da tela (Ex: virar celular)
+                window.addEventListener('resize', desenharLinhaTinteiro);
+                
+                // Redesenha periodicamente por alguns segundos para garantir carregamento de fontes/imagens
+                setTimeout(desenharLinhaTinteiro, 1000);
+                setTimeout(desenharLinhaTinteiro, 3000);
+                
+            }, 500); 
         }
     } catch (e) { console.error(e); }
 
-    // --- OBSERVER (Fade Up) ---
-    function ativarObservador() {
-        const elements = document.querySelectorAll('.timeline-element');
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('visible');
-                }
-            });
-        }, { threshold: 0.1 });
-        elements.forEach(el => observer.observe(el));
-    }
-
-    // --- UTILS ---
+    // --- FUNÇÕES UTILITÁRIAS (Mantidas) ---
     function converterLinkDrive(link) {
         if (!link) return "";
         link = link.trim();
@@ -223,11 +204,10 @@ document.addEventListener('DOMContentLoaded', async function() {
         return d;
     }
 
-    // --- MODAL & ZOOM ---
+    // Modal & Zoom
     window.aplicarZoom = function(f) { zoomLevel += f; if (zoomLevel < 1) { zoomLevel = 1; translateX = 0; translateY = 0; } if (zoomLevel > 4) zoomLevel = 4; atualizarTransformacao(); }
     function resetarZoom() { zoomLevel = 1; translateX = 0; translateY = 0; atualizarTransformacao(); }
     function atualizarTransformacao() { const img = document.getElementById('modal-img'); if(img) img.style.transform = `translate(${translateX}px, ${translateY}px) scale(${zoomLevel})`; }
-    
     const imgModal = document.getElementById('modal-img');
     if(imgModal) {
         imgModal.addEventListener('mousedown', (e) => { if(zoomLevel > 1) { isDragging=true; startX=e.clientX-translateX; startY=e.clientY-translateY; imgModal.style.cursor='grabbing'; e.preventDefault(); }});
