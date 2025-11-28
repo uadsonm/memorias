@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memórias em Traços | Galeria</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Lato:wght@300;400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="page-loading">
+
+    <header class="accessibility-bar">
+        <div class="logo">Memórias em Traços</div>
+        <div class="a11y-controls">
+            <button id="btn-contrast" class="a11y-btn"><span class="material-icons">contrast</span></button>
+            <button id="btn-font-plus" class="a11y-btn"><span class="material-icons">text_increase</span></button>
+            <button id="btn-font-minus" class="a11y-btn"><span class="material-icons">text_decrease</span></button>
+        </div>
+    </header>
+
+    <main class="container">
+        <section class="intro-section">
+            <h1>A Erosão da Escrita</h1>
+            <div class="separator-ornament"></div>
+            <p class="lead-text">Uma jornada íntima através dos diários, documentando cronologicamente como a vida e a doença transformaram o traço.</p>
+        </section>
+
+        <section id="timeline" class="timeline">
+            <div id="paleo-line-container" class="paleo-line-container">
+                <div id="paleo-text" class="paleo-text"></div>
+            </div>
+
+            <div id="timeline-content" class="timeline-content">
+                <p style="text-align: center; margin-top:50px;">Carregando...</p>
+            </div>
+        </section>
+    </main>
+
+    <div id="image-modal" class="modal-overlay hidden" onclick="fecharModal(event)">
+        <button class="close-modal-btn" onclick="fecharModal(event, true)">×</button>
+        <div class="modal-window fade-in-scale" onclick="event.stopPropagation()"> 
+            <div class="modal-col-img">
+                <button id="prev-btn" class="nav-btn prev hidden" onclick="mudarFoto(-1)">❮</button>
+                <img id="modal-img" src="" alt="Diário">
+                <button id="next-btn" class="nav-btn next hidden" onclick="mudarFoto(1)">❯</button>
+                <div class="zoom-controls">
+                    <button onclick="aplicarZoom(0.2)"><span class="material-icons">add</span></button>
+                    <button onclick="aplicarZoom(-0.2)"><span class="material-icons">remove</span></button>
+                </div>
+                <div id="photo-counter" class="photo-counter hidden">1 / 2</div>
+            </div>
+            <div class="modal-col-info">
+                <h3 id="modal-titulo">Título</h3>
+                <p id="modal-data" class="modal-date-tag">Data</p>
+                <span class="separator-line"></span>
+                <div id="modal-content-text"></div>
+            </div>
+        </div>
+    </div>
+
+    <footer><p>Memórias em Traços 2025</p></footer>
+
+    <div vw class="enabled"><div vw-access-button class="active"></div><div vw-plugin-wrapper><div class="vw-plugin-top-wrapper"></div></div></div>
+    <script src="https://vlibras.gov.br/app/vlibras-plugin.js"></script>
+    <script>new window.VLibras.Widget('https://vlibras.gov.br/app');</script>
+
+    <script type="module" src="script.js"></script>
+</body>
+</html>

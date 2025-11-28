@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestão - Memórias</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600&family=Lato:wght@300;400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body style="background-image: none;"> <div class="container">
+        <div id="login-screen" class="box" style="max-width: 400px; margin: 100px auto;">
+            <h2 style="text-align: center;">🔐 Acesso Restrito</h2>
+            <input type="text" id="user" placeholder="Usuário" style="margin-bottom: 10px;">
+            <input type="password" id="pass" placeholder="Senha" style="margin-bottom: 20px;">
+            <button onclick="logar()" class="btn-primary" style="width: 100%;">Entrar</button>
+        </div>
+
+        <div id="admin-screen" class="hidden">
+            <div class="box admin-header">
+                <h2>Nova Memória</h2>
+                <div class="drive-alert">⚠️ Use imagens "Públicas" do Google Drive.</div>
+
+                <label style="font-weight: bold; display: block; margin-top: 15px;">Link Imagem 1 (Principal)</label>
+                <input type="text" id="imgLink" placeholder="Cole o link do Drive">
+                
+                <label style="font-weight: bold; display: block; margin-top: 15px;">Link Imagem 2 (Opcional)</label>
+                <input type="text" id="imgLink2" placeholder="Verso ou detalhe">
+                
+                <label style="font-weight: bold; display: block; margin-top: 15px;">Data</label>
+                <input type="date" id="data">
+                
+                <label style="font-weight: bold; display: block; margin-top: 15px;">Título</label>
+                <input type="text" id="titulo">
+                
+                <label style="font-weight: bold; display: block; margin-top: 15px;">Transcrição</label>
+                <textarea id="transcricao" rows="4"></textarea>
+                
+                <label style="font-weight: bold; display: block; margin-top: 15px;">Contexto</label>
+                <textarea id="descricao" rows="4"></textarea>
+
+                <div style="margin-top: 20px; display: flex; gap: 10px;">
+                    <button onclick="salvarNoFirebase()" class="btn-primary" id="btn-save">💾 Salvar na Nuvem</button>
+                    <button onclick="cancelarEdicao()" id="btn-cancel" style="background:#999; color:white; padding:12px 30px; border:none; display:none;">Cancelar</button>
+                </div>
+                <p id="status" style="text-align:center; color: var(--accent); font-weight:bold; margin-top:10px;"></p>
+            </div>
+
+            <div class="box">
+                <h2>Gerenciar Publicações</h2>
+                <div style="overflow-x:auto;">
+                    <table id="tabela-posts">
+                        <thead><tr><th>Img</th><th>Título/Data</th><th>Ações</th></tr></thead>
+                        <tbody id="lista-corpo"><tr><td colspan="3">Carregando...</td></tr></tbody>
+                    </table>
+                </div>
+                <br>
+                <button onclick="sair()" style="background: var(--text-light); color:white; padding: 10px 20px; border:none;">Sair</button>
+                <a href="galeria.html" target="_blank" style="float: right; margin-top: 10px; color: var(--accent); font-weight: bold;">Ver Galeria ➜</a>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        // SUAS CHAVES (Memorias-Final)
+        const firebaseConfig = {
+            apiKey: "AIzaSyAJA22Ozc0EOHMAlVBr7TBnR6nHuyEHenA",
+            authDomain: "memorias-final.firebaseapp.com",
+            projectId: "memorias-final",
+            storageBucket: "memorias-final.firebasestorage.app",
+            messagingSenderId: "723434570784",
+            appId: "1:723434570784:web:c2b222195add18e7f72845"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        let listaGlobal = [];
+
+        window.carregarTabela = async function() {
+            const tbody = document.getElementById('lista-corpo');
+            tbody.innerHTML = "<tr><td colspan='3'>Atualizando...</td></tr>";
+            try {
+                const querySnapshot = await getDocs(collection(db, "diarios"));
+                listaGlobal = [];
+                querySnapshot.forEach((doc) => listaGlobal.push({ id: doc.id, ...doc.data() }));
+                listaGlobal.sort((a, b) => new Date(a.data) - new Date(b.data));
+                tbody.innerHTML = "";
+                if (listaGlobal.length === 0) { tbody.innerHTML = "<tr><td colspan='3'>Vazio.</td></tr>"; return; }
+                listaGlobal.forEach((item) => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td><img src="${converterLinkDrive(item.imagem)}" style="width:50px; height:50px; object-fit:cover; border-radius:4px;"></td>
+                        <td><strong>${item.titulo}</strong><br><small>${item.data}</small></td>
+                        <td>
+                            <button onclick="prepararEdicao('${item.id}')" class="btn-edit"><span class="material-icons">edit</span></button>
+                            <button onclick="deletarItem('${item.id}')" class="btn-danger"><span class="material-icons">delete</span></button>
+                        </td>`;
+                    tbody.appendChild(tr);
+                });
+            } catch (e) { tbody.innerHTML = `<tr><td colspan='3' style="color:red">${e.message}</td></tr>`; }
+        }
+
+        window.salvarNoFirebase = async function() {
+            const btn = document.getElementById('btn-save');
+            const status = document.getElementById('status');
+            const editId = document.getElementById('edit-id').value;
+            if(!document.getElementById('data').value) { alert("Data obrigatória"); return; }
+            btn.disabled = true; btn.innerText = "Processando...";
+            
+            const dadosForm = {
+                imagem: document.getElementById('imgLink').value,
+                imagem2: document.getElementById('imgLink2').value,
+                data: document.getElementById('data').value,
+                titulo: document.getElementById('titulo').value,
+                transcricao: document.getElementById('transcricao').value,
+                descricao: document.getElementById('descricao').value,
+                timestamp: new Date()
+            };
+
+            try {
+                if (editId) {
+                    await updateDoc(doc(db, "diarios", editId), dadosForm);
+                    status.innerText = "Atualizado!";
+                } else {
+                    await addDoc(collection(db, "diarios"), dadosForm);
+                    status.innerText = "Salvo!";
+                }
+                window.limparFormulario();
+                window.carregarTabela();
+            } catch (e) { alert("Erro: " + e.message); } 
+            finally { btn.disabled = false; btn.innerText = "💾 Salvar na Nuvem"; setTimeout(()=>status.innerText="", 3000); }
+        }
+
+        window.deletarItem = async function(id) {
+            if(confirm("Apagar?")) { await deleteDoc(doc(db, "diarios", id)); window.carregarTabela(); }
+        }
+
+        window.prepararEdicao = function(id) {
+            const item = listaGlobal.find(i => i.id === id);
+            if(!item) return;
+            document.getElementById('edit-id').value = id;
+            document.getElementById('imgLink').value = item.imagem;
+            document.getElementById('imgLink2').value = item.imagem2 || "";
+            document.getElementById('data').value = item.data;
+            document.getElementById('titulo').value = item.titulo;
+            document.getElementById('transcricao').value = item.transcricao || "";
+            document.getElementById('descricao').value = item.descricao || "";
+            document.getElementById('form-title').innerText = "Editando Registro";
+            document.getElementById('btn-save').innerText = "🔄 Atualizar";
+            document.getElementById('btn-cancel').style.display = "inline-flex";
+            window.scrollTo(0,0);
+        }
+
+        window.limparFormulario = function() {
+            document.getElementById('edit-id').value = "";
+            document.getElementById('imgLink').value = "";
+            document.getElementById('imgLink2').value = "";
+            document.getElementById('titulo').value = "";
+            document.getElementById('transcricao').value = "";
+            document.getElementById('descricao').value = "";
+            document.getElementById('form-title').innerText = "Nova Memória";
+            document.getElementById('btn-save').innerText = "💾 Salvar na Nuvem";
+            document.getElementById('btn-cancel').style.display = "none";
+        }
+        window.cancelarEdicao = function() { window.limparFormulario(); }
+
+        function converterLinkDrive(link) {
+            if (!link) return "";
+            if (link.includes('drive.google.com') && link.includes('/d/')) {
+                let id = link.match(/\/d\/(.+?)(?:\/|$|\?)/)?.[1];
+                if(id) return `https://lh3.googleusercontent.com/d/${id}`;
+            }
+            return link;
+        }
+
+        if(localStorage.getItem('logado')) window.carregarTabela();
+    </script>
+
+    <script>
+        function logar() {
+            if(document.getElementById('user').value === 'admin' && document.getElementById('pass').value === 'admin') {
+                document.getElementById('login-screen').classList.add('hidden');
+                document.getElementById('admin-screen').classList.remove('hidden');
+                localStorage.setItem('logado', 'true');
+                if(window.carregarTabela) window.carregarTabela();
+            } else { alert("Senha incorreta"); }
+        }
+        if(localStorage.getItem('logado')) {
+            document.getElementById('login-screen').classList.add('hidden');
+            document.getElementById('admin-screen').classList.remove('hidden');
+        }
+        function sair() { localStorage.removeItem('logado'); location.reload(); }
+    </script>
+</body>
+</html>
