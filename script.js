@@ -39,7 +39,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         return path;
     }
 
-    // --- DESENHAR LINHA + RAÍZES ---
+    // --- DESENHAR LINHA ---
     function montarAnimacaoLinha() {
         const svg = document.getElementById('ink-canvas');
         const path = document.getElementById('ink-path');
@@ -61,7 +61,6 @@ document.addEventListener('DOMContentLoaded', async function() {
         svg.style.height = totalHeight + 'px';
         svg.setAttribute('viewBox', `0 0 ${width} ${totalHeight}`);
         
-        // 1. LINHA TORTUOSA (Cursive)
         let d = `M ${centerX} 0`;
         let lastY = 0;
 
@@ -69,27 +68,22 @@ document.addEventListener('DOMContentLoaded', async function() {
             const cardTop = card.offsetTop;
             const dotY = cardTop + 45; 
             
-            // Desenha com curvas suaves até o card
             const midY = (lastY + dotY) / 2;
-            const controlX = centerX + (Math.random() - 0.5) * 40; // Aumentei o "Wobble" para ficar mais torto
+            const controlX = centerX + (Math.random() - 0.5) * 40; 
             
             d += ` Q ${controlX} ${midY}, ${centerX} ${dotY}`;
             lastY = dotY;
         });
 
-        // Conecta até o rodapé
         const footerY = totalHeight - 80;
         d += ` L ${centerX} ${footerY}`;
         path.setAttribute('d', d);
 
-        // 2. GERAR RAÍZES
         const rootsPathData = generateRoots(centerX, footerY, 90, 5, 4);
-        
         const rootsPathElement = document.createElementNS("http://www.w3.org/2000/svg", "path");
         rootsPathElement.setAttribute("d", rootsPathData);
         rootsGroup.appendChild(rootsPathElement);
 
-        // 3. ANIMAÇÃO GSAP
         const length = path.getTotalLength();
         gsap.set(path, { strokeDasharray: length, strokeDashoffset: length });
         
@@ -109,7 +103,7 @@ document.addEventListener('DOMContentLoaded', async function() {
 
         const footerP = footer.querySelector('p');
         ScrollTrigger.create({
-            trigger: footerP, // Dispara exatamente no texto do footer
+            trigger: footerP, 
             start: "top bottom",
             end: "bottom bottom",
             scrub: 1.5,
@@ -137,8 +131,14 @@ document.addEventListener('DOMContentLoaded', async function() {
                 const anoAtual = item.data.split('-')[0];
                 if (anoAtual !== ultimoAno) {
                     const divisor = document.createElement('div');
-                    divisor.className = 'year-divider timeline-card'; // Importante para o GSAP detectar
+                    divisor.className = 'year-divider timeline-card'; 
                     divisor.innerHTML = `<span>${anoAtual}</span>`;
+                    // Reset do estilo do divisor para ele não pegar o estilo de card
+                    divisor.style.background = "transparent";
+                    divisor.style.border = "none";
+                    divisor.style.boxShadow = "none";
+                    divisor.style.marginBottom = "100px"; // Margem fixa para o ano
+                    
                     timelineContent.appendChild(divisor);
                     ultimoAno = anoAtual;
                 }
@@ -148,9 +148,9 @@ document.addEventListener('DOMContentLoaded', async function() {
                 const imgUrl = converterLinkDrive(item.imagem);
                 let iconHtml = (item.imagem2) ? `<div class="multi-icon"><span class="material-icons">collections</span></div>` : "";
 
-                // --- ESPAÇAMENTO ALEATÓRIO (ORGANIC RHYTHM) ---
-                // Gera um espaçamento entre 100px e 250px
-                const randomMargin = Math.floor(Math.random() * (250 - 100 + 1) + 100);
+                // --- ESPAÇAMENTO ORGÂNICO (RANDOM) ---
+                // Sorteia entre 150px e 300px
+                const randomMargin = Math.floor(Math.random() * (300 - 150 + 1) + 150);
                 article.style.marginBottom = `${randomMargin}px`;
 
                 article.innerHTML = `
@@ -166,11 +166,9 @@ document.addEventListener('DOMContentLoaded', async function() {
                 timelineContent.appendChild(article);
             });
 
-            // GSAP ANIMATIONS
             setTimeout(() => {
                 montarAnimacaoLinha();
                 
-                // Animação de entrada dos cards
                 gsap.utils.toArray('.timeline-card').forEach(card => {
                     gsap.fromTo(card, 
                         { opacity: 0, y: 50 },
@@ -193,7 +191,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         }
     } catch (e) { console.error(e); }
 
-    // --- FUNÇÕES UTILITÁRIAS (Mantidas) ---
+    // --- FUNÇÕES UTILITÁRIAS ---
     function converterLinkDrive(link) {
         if (!link) return "";
         link = link.trim();
@@ -224,7 +222,6 @@ document.addEventListener('DOMContentLoaded', async function() {
         window.addEventListener('mouseup', () => { isDragging=false; if(imgModal) imgModal.style.cursor='grab'; });
         window.addEventListener('mousemove', (e) => { if(!isDragging) return; e.preventDefault(); translateX=e.clientX-startX; translateY=e.clientY-startY; atualizarTransformacao(); });
     }
-
     window.abrirModal = function(i) {
         const item = window.listaDiariosGlobal[i]; if(!item) return;
         imagensAtuais = [];
@@ -238,7 +235,6 @@ document.addEventListener('DOMContentLoaded', async function() {
         if (item.descricao) txt.innerHTML += `<div class="section-descricao"><h4>Contexto</h4><p>${item.descricao}</p><button class="narrate-btn" onclick="lerTexto('${escapar(item.descricao)}')"><span class="material-icons">volume_up</span> Ouvir</button></div>`;
         document.getElementById('image-modal').classList.remove('hidden'); document.body.style.overflow = "hidden";
     }
-    
     window.mudarFoto = function(d) { let n = indiceFotoAtual + d; if(n >= 0 && n < imagensAtuais.length) { indiceFotoAtual = n; resetarZoom(); atualizarImagemModal(); } }
     function atualizarImagemModal() {
         document.getElementById('modal-img').src = imagensAtuais[indiceFotoAtual];
@@ -246,12 +242,10 @@ document.addEventListener('DOMContentLoaded', async function() {
         if(imagensAtuais.length > 1) { ctr.classList.remove('hidden'); ctr.innerText = `${indiceFotoAtual+1} / ${imagensAtuais.length}`; p.classList.toggle('hidden', indiceFotoAtual===0); n.classList.toggle('hidden', indiceFotoAtual===imagensAtuais.length-1); } else { ctr.classList.add('hidden'); p.classList.add('hidden'); n.classList.add('hidden'); }
     }
     window.fecharModal = function(e, f) { if(f || e.target.id === 'image-modal') { document.getElementById('image-modal').classList.add('hidden'); document.body.style.overflow = "auto"; resetarZoom(); window.speechSynthesis.cancel(); } }
-    
     function carregarVozes() { let v = window.speechSynthesis.getVoices(); if(v.length===0)return; const p=["Google Português", "Microsoft Francisca", "Luciana"]; for(let n of p){ vozSelecionada=v.find(i=>i.name.includes(n)); if(vozSelecionada)break; } if(!vozSelecionada) vozSelecionada=v.find(i=>i.lang==='pt-BR'); }
     if(speechSynthesis.onvoiceschanged !== undefined) speechSynthesis.onvoiceschanged = carregarVozes; setTimeout(carregarVozes, 500);
     window.lerTexto = function(t) { window.speechSynthesis.cancel(); if(!vozSelecionada) carregarVozes(); const u = new SpeechSynthesisUtterance(t); if(vozSelecionada) u.voice = vozSelecionada; u.lang = "pt-BR"; u.rate = 1.1; window.speechSynthesis.speak(u); }
     function escapar(s) { return s.replace(/'/g, "\\'").replace(/"/g, '"').replace(/\n/g, ' '); }
-
     const btnC = document.getElementById('btn-contrast'); if(btnC) btnC.addEventListener('click', () => document.body.classList.toggle('high-contrast'));
     let fs = 100;
     const btnP = document.getElementById('btn-font-plus'); if(btnP) btnP.addEventListener('click', () => { if(fs<150) fs+=10; document.body.style.fontSize = fs+'%'; });
