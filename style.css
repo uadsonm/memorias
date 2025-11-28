@@ -5,7 +5,7 @@
     --text-color: #4a3b32;     
     --text-light: #786a60;     
     --accent: #a65e44;         
-    --ink-color: #1a1a1a;      /* Preto Tinta */
+    --ink-color: #1a1a1a;      
     --line-color: #c4b4a6;     
     --font-title: 'Cormorant Garamond', serif;
     --font-body: 'Lato', sans-serif;
@@ -32,21 +32,22 @@ body.page-loading { opacity: 0; transition: opacity 1s ease; }
 @keyframes softFadeIn { from { opacity: 0; } to { opacity: 1; } }
 .fade-in-scale { animation: softFadeIn 0.6s ease-in-out forwards; }
 
-/* CABEÇALHO & INTRO */
+/* CABEÇALHO */
 .accessibility-bar { position: fixed; top: 0; width: 100%; height: 80px; background: rgba(232, 224, 213, 0.95); backdrop-filter: blur(8px); border-bottom: 1px solid rgba(74, 59, 50, 0.1); display: flex; align-items: center; justify-content: space-between; padding: 0 8%; z-index: 1000; box-shadow: 0 4px 20px rgba(74, 59, 50, 0.05); }
 .logo { font-family: var(--font-title); font-weight: 700; font-size: 1.8rem; color: var(--text-color); font-style: italic; }
 .a11y-controls button { background: transparent; border: 1px solid var(--text-light); width: 35px; height: 35px; border-radius: 50%; cursor: pointer; color: var(--text-color); margin-left: 5px; }
+
 .container { max-width: 900px; margin: 0 auto; padding: 120px 20px 0 20px; position: relative; }
-.intro-section { text-align: center; margin-bottom: 60px; }
+.intro-section { text-align: center; margin-bottom: 60px; position: relative; z-index: 2; } /* Texto na frente da linha */
 .intro-section h1 { font-family: var(--font-title); font-size: 4rem; color: var(--accent); margin: 0; line-height: 1; }
 .separator-ornament { width: 80px; height: 3px; background: var(--text-light); margin: 20px auto; opacity: 0.3; }
 .instruction-box { display: inline-flex; align-items: center; gap: 10px; background: rgba(255, 255, 255, 0.5); border: 1px solid var(--line-color); padding: 8px 20px; border-radius: 4px; margin-top: 30px; font-size: 0.9rem; }
 
-/* --- TIMELINE (AJUSTADA PARA O SVG APARECER) --- */
+/* --- TIMELINE (GSAP) --- */
 .timeline {
     position: relative;
     padding: 0;
-    margin-top: 50px;
+    margin-top: 20px;
     width: 100%;
 }
 
@@ -56,38 +57,43 @@ body.page-loading { opacity: 0; transition: opacity 1s ease; }
     left: 0;
     width: 100%;
     height: 100%;
-    z-index: 0; /* Atrás dos cards */
+    z-index: 0; /* Linha atrás */
     pointer-events: none;
-    overflow: visible; /* Permite desenhar fora da caixa se precisar */
+    overflow: visible;
 }
 
-/* LINHA MAIS GROSSA E VISÍVEL */
-.ink-path {
+/* Estilo da Linha "Tinteiro" */
+.ink-path, #roots-group path {
     fill: none;
     stroke: var(--ink-color);
-    stroke-width: 3px; /* Mais grossa */
+    stroke-width: 2px;
     stroke-linecap: round;
     stroke-linejoin: round;
-    opacity: 0.9;
+    opacity: 0.8;
+}
+
+/* Estilo específico para raízes (mais finas nas pontas) */
+#roots-group path {
+    stroke-width: 1.5px;
 }
 
 .timeline-content { position: relative; z-index: 2; width: 100%; }
 
-/* Divisor de Ano */
-.year-divider { display: flex; justify-content: center; align-items: center; width: 100%; margin: 80px 0; clear: both; position: relative; }
+/* Divisores e Cards */
+.year-divider { display: flex; justify-content: center; align-items: center; width: 100%; margin: 100px 0; clear: both; position: relative; }
 .year-divider span { background: var(--ink-color); color: #fff; font-family: var(--font-title); font-size: 1.8rem; padding: 5px 30px; border-radius: 50px; font-style: italic; box-shadow: 0 4px 10px rgba(0,0,0,0.2); z-index: 5; border: 1px solid rgba(255,255,255,0.1); }
 
-/* Cards */
-.timeline-card { background: var(--card-bg); width: 45%; padding: 30px; position: relative; margin-bottom: 120px; box-shadow: 0 10px 30px rgba(74, 59, 50, 0.08); border-radius: 2px; border: 1px solid rgba(0,0,0,0.02); opacity: 0; transform: translateY(50px); transition: all 0.8s ease-out; }
-.timeline-card.visible { opacity: 1; transform: translateY(0); }
+.timeline-card { background: var(--card-bg); width: 45%; padding: 30px; position: relative; margin-bottom: 150px; box-shadow: 0 10px 30px rgba(74, 59, 50, 0.08); border-radius: 2px; border: 1px solid rgba(0,0,0,0.02); z-index: 1; }
+/* Removemos opacidade 0 aqui pois o GSAP vai controlar isso */
+
 .timeline-card:nth-child(odd) { float: left; clear: right; text-align: right; }
 .timeline-card:nth-child(even) { float: right; clear: left; text-align: left; }
 .timeline-content::after { content: ""; display: table; clear: both; }
 
-/* Bolinha de Conexão */
-.timeline-card::after { content: ''; position: absolute; width: 14px; height: 14px; background: var(--ink-color); border-radius: 50%; top: 40px; z-index: 3; box-shadow: 0 0 0 4px rgba(232, 224, 213, 1); }
-.timeline-card:nth-child(odd)::after { right: -13.5%; } 
-.timeline-card:nth-child(even)::after { left: -13.5%; }
+/* Bolinha */
+.timeline-card::after { content: ''; position: absolute; width: 10px; height: 10px; background: var(--ink-color); border-radius: 50%; top: 40px; z-index: 3; box-shadow: 0 0 0 4px rgba(232, 224, 213, 1); }
+.timeline-card:nth-child(odd)::after { right: -12.5%; } 
+.timeline-card:nth-child(even)::after { left: -12.5%; }
 
 /* Foto & Detalhes */
 .img-wrapper { background: #fff; padding: 10px; cursor: pointer; position: relative; margin-top: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
@@ -98,35 +104,35 @@ body.page-loading { opacity: 0; transition: opacity 1s ease; }
 .card-date { font-family: var(--font-hand); font-size: 1.5rem; color: var(--accent); font-weight: 700; }
 .timeline-card h2 { font-family: var(--font-title); font-size: 1.8rem; margin: 5px 0; line-height: 1.2; }
 
-/* Modal */
+/* Modal (Mesmo de antes) */
 .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(43, 36, 32, 0.98); z-index: 2000; display: flex; justify-content: center; align-items: center; }
 .hidden { display: none !important; }
 .modal-window { background: var(--bg-color); width: 95%; max-width: 1200px; height: 90vh; display: flex; box-shadow: 0 0 50px rgba(0,0,0,0.5); animation: softFadeIn 0.5s ease-out; }
 .modal-col-img { flex: 1.8; background: #1f1a17; padding: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; overflow: hidden; }
 .modal-col-img img { max-width: 100%; max-height: calc(100% - 60px); object-fit: contain; box-shadow: 0 0 30px rgba(0,0,0,0.5); cursor: grab; }
 .modal-col-img img:active { cursor: grabbing; }
+.zoom-controls { position: absolute; bottom: 20px; right: 20px; display: flex; gap: 10px; z-index: 10; }
+.zoom-controls button { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.3); color: white; width: 35px; height: 35px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.nav-btn { position: absolute; top: 50%; transform: translateY(-50%); background: transparent; color: white; border: 1px solid rgba(255,255,255,0.2); width: 50px; height: 50px; border-radius: 50%; font-size: 1.5rem; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 10; }
+.nav-btn.prev { left: 20px; } .nav-btn.next { right: 20px; }
+.photo-counter { margin-top: 15px; color: #999; font-size: 0.9rem; }
 .modal-col-info { flex: 1; padding: 50px; overflow-y: auto; background-color: var(--bg-color); }
 #modal-titulo { font-size: 2.5rem; line-height: 1.1; margin-top: 0; font-family: var(--font-title); }
 .section-transcricao { background: #f4efeb; padding: 20px; border-left: 3px solid var(--accent); margin-bottom: 30px; font-family: 'Cormorant Garamond', serif; font-size: 1.2rem; font-style: italic; }
 .section-descricao { background: #fff; padding: 20px; border-radius: 4px; margin-bottom: 30px; border: 1px solid rgba(0,0,0,0.05); }
 .narrate-btn { background: transparent; border: 1px solid var(--accent); border-radius: 30px; padding: 8px 20px; font-size: 0.8rem; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; color: var(--accent); margin-top: 10px; }
 .close-modal-btn { position: absolute; top: 20px; right: 30px; font-size: 2.5rem; background: none; border: none; cursor: pointer; color: var(--text-color); opacity: 0.5; }
-.zoom-controls { position: absolute; bottom: 20px; right: 20px; display: flex; gap: 10px; z-index: 10; }
-.zoom-controls button { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.3); color: white; width: 35px; height: 35px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-.nav-btn { position: absolute; top: 50%; transform: translateY(-50%); background: transparent; color: white; border: 1px solid rgba(255,255,255,0.2); width: 50px; height: 50px; border-radius: 50%; font-size: 1.5rem; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 10; }
-.nav-btn.prev { left: 20px; } .nav-btn.next { right: 20px; }
-.photo-counter { margin-top: 15px; color: #999; font-size: 0.9rem; }
 
-footer { text-align: center; padding: 80px 20px 40px 20px; color: var(--text-light); margin-top: 0; clear: both; background: transparent; position: relative; z-index: 2; }
-footer p { background: rgba(232, 224, 213, 0.8); display: inline-block; padding: 5px 15px; border-radius: 4px; }
+/* Rodapé */
+footer { text-align: center; padding: 100px 20px 40px 20px; color: var(--text-light); margin-top: 0; clear: both; background: transparent; position: relative; z-index: 2; }
+footer p { background: rgba(232, 224, 213, 0.9); display: inline-block; padding: 5px 15px; border-radius: 4px; }
 
 @media (max-width: 800px) {
     .timeline-card { width: 100%; float: none; text-align: left !important; margin-bottom: 50px; padding-left: 60px; }
     .timeline-card:nth-child(odd), .timeline-card:nth-child(even) { text-align: left; }
     .timeline-card::after { left: 16px; right: auto; }
-    .ink-canvas { left: 0px; } /* SVG no fundo */
+    .ink-canvas { left: 0px; }
     .modal-window { flex-direction: column; height: 100vh; width: 100%; }
     .modal-col-img { height: 40%; padding: 10px; }
     .modal-col-info { height: 60%; padding: 20px; }
-    .close-modal-btn { color: white; top: 10px; right: 10px; }
 }
