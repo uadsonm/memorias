@@ -5,6 +5,7 @@
     --text-color: #4a3b32;     
     --text-light: #786a60;     
     --accent: #a65e44;         
+    --ink-color: #1a1a1a;      /* Preto Tinta quase puro */
     --line-color: #c4b4a6;     
     --font-title: 'Cormorant Garamond', serif;
     --font-body: 'Lato', sans-serif;
@@ -32,7 +33,7 @@ body.page-loading { opacity: 0; transition: opacity 1s ease; }
 @keyframes softFadeIn { from { opacity: 0; } to { opacity: 1; } }
 .fade-in-scale { animation: softFadeIn 0.6s ease-in-out forwards; }
 
-/* --- 2. CABEÇALHO & INTRO --- */
+/* --- 2. CABEÇALHO --- */
 .accessibility-bar {
     position: fixed; top: 0; width: 100%; height: 80px;
     background: rgba(232, 224, 213, 0.95); backdrop-filter: blur(8px);
@@ -43,23 +44,6 @@ body.page-loading { opacity: 0; transition: opacity 1s ease; }
 .logo { font-family: var(--font-title); font-weight: 700; font-size: 1.8rem; color: var(--text-color); font-style: italic; }
 .a11y-controls button { background: transparent; border: 1px solid var(--text-light); width: 35px; height: 35px; border-radius: 50%; cursor: pointer; color: var(--text-color); margin-left: 5px; }
 
-/* INTRODUÇÃO (index.html) */
-body.intro-body {
-    height: 100vh; min-height: 600px; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 20px; padding-top: 0 !important;
-}
-.intro-wrapper { max-width: 700px; position: relative; z-index: 2; animation: softFadeIn 1s ease-out; }
-.intro-header h1 { font-family: var(--font-title); font-size: 4.5rem; color: #000; margin: 0; line-height: 1; font-style: italic; }
-.logo-small { text-transform: uppercase; letter-spacing: 4px; font-size: 0.8rem; margin-bottom: 15px; color: var(--text-light); }
-.intro-text h2 { font-family: var(--font-hand); font-size: 2.5rem; color: var(--accent); margin-bottom: 15px; margin-top: 30px; }
-.intro-text p { font-family: var(--font-title); font-size: 1.5rem; margin-bottom: 20px; line-height: 1.4; color: var(--text-color); }
-.enter-btn {
-    margin-top: 40px; background-color: #000; color: #fff; padding: 15px 50px;
-    text-decoration: none; text-transform: uppercase; letter-spacing: 2px; font-weight: bold;
-    display: inline-flex; align-items: center; gap: 10px; border-radius: 2px; transition: all 0.3s; font-size: 0.9rem;
-}
-.enter-btn:hover { background-color: var(--accent); transform: translateY(-3px); }
-
-/* --- 3. GALERIA (LAYOUT) --- */
 .container { max-width: 900px; margin: 0 auto; padding: 120px 20px 0 20px; position: relative; }
 .intro-section { text-align: center; margin-bottom: 60px; }
 .intro-section h1 { font-family: var(--font-title); font-size: 4rem; color: var(--accent); margin: 0; line-height: 1; }
@@ -69,42 +53,38 @@ body.intro-body {
     border: 1px solid var(--line-color); padding: 8px 20px; border-radius: 4px; margin-top: 30px; font-size: 0.9rem;
 }
 
-/* --- 4. TIMELINE PALEOGRAFIA (NOVA) --- */
+/* --- 3. TIMELINE (A MÁGICA DO SVG) --- */
 .timeline {
     position: relative;
     padding: 0;
-    min-height: 500px;
-    /* Remove padding bottom para encostar no footer */
+    margin-top: 50px;
+    /* Importante: Sem overflow hidden para a linha passar */
 }
 
-/* A Linha de Texto Vertical */
-.paleo-line-container {
+/* O Canvas SVG que cobre tudo */
+.ink-canvas {
     position: absolute;
     top: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 40px; /* Largura da coluna de texto */
+    left: 0;
+    width: 100%;
     height: 100%;
     z-index: 0;
-    overflow: hidden; /* Corta o texto que ainda não "apareceu" */
-    opacity: 0.7;
+    pointer-events: none; /* Deixa clicar através */
+    overflow: visible;
 }
 
-.paleo-text {
-    font-family: var(--font-title); /* Fonte serifada elegante */
-    font-style: italic;
-    font-size: 1.2rem;
-    color: #000; /* Tinta preta */
-    writing-mode: vertical-rl; /* Texto na vertical */
-    text-orientation: mixed;
-    white-space: nowrap;
-    text-align: center;
-    line-height: 40px;
-    letter-spacing: 3px;
-    /* O JS vai repetir esse texto */
+/* A Linha em si */
+.ink-path {
+    fill: none;
+    stroke: var(--ink-color);
+    stroke-width: 2.5px;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    filter: url(#ink-bleed); /* Aplica o efeito de tinta borrada */
+    opacity: 0.85;
 }
 
-/* Container dos Cards */
+/* Conteúdo */
 .timeline-content {
     position: relative;
     z-index: 2;
@@ -117,16 +97,18 @@ body.intro-body {
     width: 100%; margin: 80px 0; clear: both; position: relative;
 }
 .year-divider span {
-    background: #000; /* Preto Tinta */
-    color: #fff; font-family: var(--font-title); font-size: 1.8rem;
-    padding: 5px 30px; border-radius: 50px; font-style: italic;
+    background: var(--ink-color); /* Preto */
+    color: #e8e0d5; /* Cor do fundo */
+    font-family: var(--font-title); font-size: 1.8rem;
+    padding: 5px 30px; border-radius: 2px; font-style: italic;
     box-shadow: 0 4px 10px rgba(0,0,0,0.2); z-index: 5;
+    border: 1px solid rgba(255,255,255,0.1);
 }
 
 /* CARDS */
 .timeline-card {
     background: var(--card-bg); width: 45%; padding: 30px;
-    position: relative; margin-bottom: 100px;
+    position: relative; margin-bottom: 120px;
     box-shadow: 0 10px 30px rgba(74, 59, 50, 0.08);
     border-radius: 2px; border: 1px solid rgba(0,0,0,0.02);
     opacity: 0; transform: translateY(50px); transition: all 0.8s ease-out;
@@ -136,23 +118,25 @@ body.intro-body {
 .timeline-card:nth-child(odd) { float: left; clear: right; text-align: right; }
 .timeline-card:nth-child(even) { float: right; clear: left; text-align: left; }
 
-/* Bolinha de Conexão (Discreta) */
+/* Bolinha de Conexão (Tinta) */
 .timeline-card::after {
-    content: ''; position: absolute; width: 10px; height: 10px;
-    background: #000; border-radius: 50%; top: 40px; z-index: 3;
+    content: ''; position: absolute; width: 14px; height: 14px;
+    background: var(--ink-color); border-radius: 50%; top: 40px; z-index: 3;
+    box-shadow: 0 0 0 4px rgba(232, 224, 213, 1);
+    filter: url(#ink-bleed); /* Tinta borrada */
 }
-.timeline-card:nth-child(odd)::after { right: -12.5%; } 
-.timeline-card:nth-child(even)::after { left: -12.5%; }
+.timeline-card:nth-child(odd)::after { right: -13.5%; } 
+.timeline-card:nth-child(even)::after { left: -13.5%; }
 
 /* Limpa Floats */
 .timeline-content::after { content: ""; display: table; clear: both; }
 
-/* --- 5. FOTO & DETALHES --- */
+/* --- 4. FOTO & DETALHES --- */
 .img-wrapper {
     background: #fff; padding: 10px; cursor: pointer; position: relative; margin-top: 15px;
     box-shadow: 0 2px 10px rgba(0,0,0,0.1);
 }
-.diary-img { filter: sepia(15%); }
+.diary-img { filter: sepia(15%) contrast(1.05); }
 .zoom-hint {
     position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
     background: rgba(0, 0, 0, 0.8); color: white; padding: 8px 20px; font-size: 0.8rem;
@@ -163,7 +147,7 @@ body.intro-body {
 .card-date { font-family: var(--font-hand); font-size: 1.5rem; color: var(--accent); font-weight: 700; }
 .timeline-card h2 { font-family: var(--font-title); font-size: 1.8rem; margin: 5px 0; line-height: 1.2; }
 
-/* --- 6. MODAL --- */
+/* --- 5. MODAL --- */
 .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(43, 36, 32, 0.98); z-index: 2000; display: flex; justify-content: center; align-items: center; }
 .hidden { display: none !important; }
 .modal-window { background: var(--bg-color); width: 95%; max-width: 1200px; height: 90vh; display: flex; box-shadow: 0 0 50px rgba(0,0,0,0.5); animation: fadeInScale 0.5s ease-out forwards; }
@@ -183,26 +167,24 @@ body.intro-body {
 .narrate-btn { background: transparent; border: 1px solid var(--accent); border-radius: 30px; padding: 8px 20px; font-size: 0.8rem; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; color: var(--accent); margin-top: 10px; }
 .close-modal-btn { position: absolute; top: 20px; right: 30px; font-size: 2.5rem; background: none; border: none; cursor: pointer; color: var(--text-color); opacity: 0.5; }
 
-/* RODAPÉ (Transparente) */
+/* RODAPÉ TRANSPARENTE */
 footer { 
-    text-align: center; padding: 40px 20px 60px 20px; color: var(--text-light); 
+    text-align: center; padding: 80px 20px 40px 20px; color: var(--text-light); 
     margin-top: 0; clear: both; background: transparent; position: relative; z-index: 2;
 }
-footer p { background: rgba(232, 224, 213, 0.9); display: inline-block; padding: 5px 15px; border-radius: 4px; }
+footer p { background: rgba(232, 224, 213, 0.8); display: inline-block; padding: 5px 15px; border-radius: 4px; font-family: var(--font-title); }
 
 /* RESPONSIVIDADE */
 @media (max-width: 800px) {
     .timeline-card { width: 100%; float: none; text-align: left !important; margin-bottom: 50px; padding-left: 60px; }
     .timeline-card:nth-child(odd), .timeline-card:nth-child(even) { text-align: left; }
     .timeline-card::after { left: 16px; right: auto; }
-    /* No mobile a linha fica na esquerda */
-    .paleo-line-container { left: 20px; transform: none; width: 2px; }
-    .paleo-text { display: none; } /* Esconde o texto no mobile, deixa só a linha */
-    .paleo-line-container { background: #000; opacity: 0.2; }
+    
+    /* No mobile, a linha fica na esquerda */
+    .ink-canvas { left: 0px; } 
     
     .modal-window { flex-direction: column; height: 100vh; width: 100%; }
     .modal-col-img { height: 40%; padding: 10px; }
     .modal-col-info { height: 60%; padding: 20px; }
     .close-modal-btn { color: white; top: 10px; right: 10px; }
-    .intro-header h1 { font-size: 3rem; }
 }
