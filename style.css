@@ -1,11 +1,11 @@
-/* --- 1. CONFIGURAÇÕES GERAIS --- */
+/* --- 1. CONFIGURAÇÕES GERAIS (GLOBAL) --- */
 :root {
     --bg-color: #e8e0d5;       /* Argila Seca */
     --card-bg: #fdfbf7;        /* Papel Off-white */
     --text-color: #4a3b32;     /* Marrom Café */
     --text-light: #786a60;     /* Marrom Suave */
     --accent: #a65e44;         /* Terracota */
-    --line-color: #c4b4a6;     /* Cor da Linha do Tempo */
+    --line-color: #c4b4a6;     /* Linha da timeline */
     --font-title: 'Cormorant Garamond', serif;
     --font-body: 'Lato', sans-serif;
     --font-hand: 'Caveat', cursive;
@@ -19,6 +19,7 @@ body {
     color: var(--text-color);
     margin: 0;
     line-height: 1.8;
+    /* Textura de Papel */
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.08'/%3E%3C/svg%3E");
     background-attachment: fixed;
     overflow-x: hidden;
@@ -26,11 +27,16 @@ body {
 
 img { max-width: 100%; height: auto; display: block; }
 
-/* Transições simples de página */
-body.fade-out { opacity: 0; transition: opacity 0.5s ease; }
-body.page-loading { opacity: 0; transition: opacity 0.5s ease; }
+/* Transições */
+body.fade-out { opacity: 0; transition: opacity 0.8s ease; }
+body.page-loading { opacity: 0; transition: opacity 1s ease; }
+@keyframes softFadeIn { from { opacity: 0; } to { opacity: 1; } }
+.fade-in-scale { animation: softFadeIn 0.6s ease-in-out forwards; }
 
-/* --- 2. CABEÇALHO --- */
+/* Botões Globais */
+button, .btn-primary, .enter-btn { cursor: pointer; transition: all 0.3s ease; font-family: var(--font-body); }
+
+/* --- 2. CABEÇALHO (Apenas para Galeria) --- */
 .accessibility-bar {
     position: fixed; top: 0; width: 100%; height: 80px;
     background: rgba(232, 224, 213, 0.95); backdrop-filter: blur(8px);
@@ -43,9 +49,9 @@ body.page-loading { opacity: 0; transition: opacity 0.5s ease; }
 
 /* --- 3. INTRODUÇÃO (index.html) --- */
 body.intro-body {
-    height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 20px; padding-top: 0 !important;
+    height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 20px;
 }
-.intro-wrapper { max-width: 700px; position: relative; z-index: 2; }
+.intro-wrapper { max-width: 700px; position: relative; z-index: 2; animation: softFadeIn 1s ease-out; }
 .intro-header h1 { font-family: var(--font-title); font-size: 4.5rem; color: var(--accent); margin: 0; line-height: 1; font-style: italic; }
 .logo-small { text-transform: uppercase; letter-spacing: 4px; font-size: 0.8rem; margin-bottom: 15px; color: var(--text-light); }
 .intro-text h2 { font-family: var(--font-hand); font-size: 2.5rem; color: var(--accent); margin-bottom: 15px; margin-top: 30px; }
@@ -53,101 +59,72 @@ body.intro-body {
 .enter-btn {
     margin-top: 40px; background-color: var(--text-color); color: #fff; padding: 15px 50px;
     text-decoration: none; text-transform: uppercase; letter-spacing: 2px; font-weight: bold;
-    display: inline-flex; align-items: center; gap: 10px; border-radius: 2px; transition: 0.3s;
+    display: inline-flex; align-items: center; gap: 10px; border-radius: 2px;
 }
 .enter-btn:hover { background-color: var(--accent); transform: translateY(-3px); }
 .intro-footer { position: absolute; bottom: 30px; width: 100%; text-align: center; font-size: 0.9rem; color: var(--text-light); opacity: 0.7; }
 
-/* --- 4. GALERIA & TIMELINE ESTATICA --- */
-.container { max-width: 900px; margin: 0 auto; padding: 120px 20px 0 20px; position: relative; }
+/* --- 4. GALERIA & TIMELINE ESTATICA (galeria.html) --- */
+/* Só aplica padding no topo se não for intro nem admin */
+body:not(.intro-body):not(.admin-body) { padding-top: 90px; }
+
+.container { max-width: 900px; margin: 0 auto; padding: 40px 20px; position: relative; }
 .intro-section { text-align: center; margin-bottom: 60px; }
 .intro-section h1 { font-family: var(--font-title); font-size: 4rem; color: var(--accent); margin: 0; line-height: 1; }
 .separator-ornament { width: 80px; height: 3px; background: var(--text-light); margin: 20px auto; opacity: 0.3; }
 .instruction-box { display: inline-flex; align-items: center; gap: 10px; background: rgba(255, 255, 255, 0.5); border: 1px solid var(--line-color); padding: 8px 20px; border-radius: 4px; margin-top: 30px; font-size: 0.9rem; }
 
-/* ESTRUTURA DA LINHA DO TEMPO */
-.timeline {
-    position: relative;
-    padding: 40px 0;
-    margin-top: 40px;
-}
+/* TIMELINE (CORRIGIDA) */
+.timeline { position: relative; padding: 40px 0; margin-top: 20px; }
 
-/* A LINHA VERTICAL (CSS PURO) */
+/* Linha Central */
 .timeline::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: 50%;
-    width: 2px;
-    background-color: var(--line-color); /* Linha estática e sólida */
-    transform: translateX(-50%);
-    z-index: 0;
+    content: ''; position: absolute; top: 0; bottom: 0; left: 50%; width: 2px;
+    background-color: var(--line-color); transform: translateX(-50%); z-index: 0;
 }
 
-/* DIVISOR DE ANO (Centralizado) */
+/* Divisor de Ano */
 .year-marker {
-    position: relative;
-    z-index: 2; /* Fica acima da linha */
-    text-align: center;
-    margin: 60px 0 80px 0; /* Espaço antes e depois */
-    clear: both;
+    position: relative; z-index: 2; text-align: center;
+    margin: 60px 0 80px 0; clear: both; width: 100%; display: block;
 }
-
 .year-marker span {
-    background-color: var(--accent);
-    color: #fff;
-    font-family: var(--font-title);
-    font-size: 2rem;
-    font-weight: bold;
-    font-style: italic;
-    padding: 8px 30px;
-    border-radius: 50px;
-    box-shadow: 0 4px 15px rgba(166, 94, 68, 0.3);
-    border: 4px solid var(--bg-color); /* Borda da cor do fundo para "cortar" a linha */
+    background-color: var(--accent); color: #fff; font-family: var(--font-title);
+    font-size: 2rem; font-weight: bold; font-style: italic; padding: 8px 30px;
+    border-radius: 50px; box-shadow: 0 4px 15px rgba(166, 94, 68, 0.3);
+    border: 4px solid var(--bg-color);
 }
 
-/* CARDS */
+/* Cards */
 .timeline-card {
-    background: var(--card-bg);
-    width: 45%;
-    padding: 30px;
-    position: relative;
-    margin-bottom: 80px; /* Espaço padrão entre cards */
+    background: var(--card-bg); width: 45%; padding: 30px;
+    position: relative; margin-bottom: 80px;
     box-shadow: 0 10px 30px rgba(74, 59, 50, 0.08);
-    border-radius: 2px;
-    border: 1px solid rgba(0,0,0,0.02);
-    clear: both;
-    z-index: 1;
+    border-radius: 2px; border: 1px solid rgba(0,0,0,0.02);
+    z-index: 1; opacity: 0; transform: translateY(30px);
+    transition: opacity 0.8s ease, transform 0.8s ease;
 }
+.timeline-card.visible { opacity: 1; transform: translateY(0); }
 
-/* Zig-Zag */
-.timeline-card:nth-child(odd) { float: left; text-align: right; }
-.timeline-card:nth-child(even) { float: right; text-align: left; }
+/* Posicionamento Zig-Zag Correto */
+.timeline-card:nth-child(odd) { float: left; clear: right; text-align: right; }
+.timeline-card:nth-child(even) { float: right; clear: left; text-align: left; }
 
-/* Bolinha de Conexão com a Linha */
+/* Bolinha de Conexão */
 .timeline-card::after {
-    content: '';
-    position: absolute;
-    top: 30px;
-    width: 14px;
-    height: 14px;
-    background-color: var(--bg-color);
-    border: 3px solid var(--accent);
-    border-radius: 50%;
-    z-index: 2;
+    content: ''; position: absolute; width: 14px; height: 14px;
+    background: var(--bg-color); border: 3px solid var(--accent);
+    top: 40px; border-radius: 50%; z-index: 2;
 }
-
-/* Posiciona a bolinha exatamente sobre a linha central */
-.timeline-card:nth-child(odd)::after { right: -12.4%; } /* Ajuste fino */
+.timeline-card:nth-child(odd)::after { right: -12.4%; } 
 .timeline-card:nth-child(even)::after { left: -12.4%; }
 
-/* Limpeza de Float */
+/* Limpa Float (Essencial para não bugar) */
 .timeline::after { content: ""; display: table; clear: both; }
 
-/* Foto & Detalhes */
-.img-wrapper { background: #fff; padding: 10px; cursor: pointer; position: relative; margin-top: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); transition: transform 0.2s; }
-.img-wrapper:hover { transform: scale(1.01); }
+/* Elementos Internos do Card */
+.img-wrapper { background: #fff; padding: 10px; cursor: pointer; position: relative; margin-top: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+.img-wrapper:hover { transform: scale(1.02); }
 .diary-img { filter: sepia(10%) contrast(1.1); }
 .zoom-hint { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(74, 59, 50, 0.9); color: white; padding: 8px 20px; font-size: 0.8rem; opacity: 0; transition: 0.3s; pointer-events: none; }
 .img-wrapper:hover .zoom-hint { opacity: 1; }
@@ -155,44 +132,32 @@ body.intro-body {
 .card-date { font-family: var(--font-hand); font-size: 1.5rem; color: var(--accent); font-weight: 700; display: block;}
 .timeline-card h2 { font-family: var(--font-title); font-size: 1.8rem; margin: 5px 0; line-height: 1.2; }
 
-/* --- 5. MODAL --- */
+/* --- 5. PAINEL ADMIN (RECUPERADO) --- */
+.admin-body { padding: 40px 20px; }
+.box {
+    background: var(--card-bg); padding: 40px; border-radius: 4px; 
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05); margin-bottom: 30px; 
+    border: 1px solid var(--line-color);
+}
+.admin-header h2, #form-title { color: var(--accent); margin-top: 0; border-bottom: 2px solid rgba(0,0,0,0.05); padding-bottom: 15px; }
+input, textarea, select {
+    width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid var(--line-color);
+    border-radius: 4px; background: #fff; font-family: var(--font-body);
+}
+.btn-primary { background-color: var(--text-color); color: #fff; border: none; padding: 12px 25px; border-radius: 4px; }
+.btn-primary:hover { background-color: var(--accent); }
+.drive-alert { font-size: 0.9rem; color: var(--accent); background: rgba(166, 94, 68, 0.1); padding: 15px; border-radius: 4px; margin-bottom: 20px; border-left: 3px solid var(--accent); }
+table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+th { text-align: left; padding: 15px; border-bottom: 2px solid var(--line-color); color: var(--text-color); }
+td { text-align: left; padding: 15px; border-bottom: 1px solid var(--line-color); vertical-align: middle; }
+.btn-danger { background-color: #a64444; color: white; padding: 8px 12px; border: none; border-radius: 2px; }
+.btn-edit { background-color: #d4a373; color: white; padding: 8px 12px; border: none; border-radius: 2px; }
+
+/* --- 6. MODAL & RODAPÉ --- */
 .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(43, 36, 32, 0.98); z-index: 2000; display: flex; justify-content: center; align-items: center; }
 .hidden { display: none !important; }
-.modal-window { background: var(--bg-color); width: 95%; max-width: 1200px; height: 90vh; display: flex; box-shadow: 0 0 50px rgba(0,0,0,0.5); }
+.modal-window { background: var(--bg-color); width: 95%; max-width: 1200px; height: 90vh; display: flex; box-shadow: 0 0 50px rgba(0,0,0,0.5); animation: softFadeIn 0.5s ease-out; }
 .modal-col-img { flex: 1.8; background: #1f1a17; padding: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; overflow: hidden; }
 .modal-col-img img { max-width: 100%; max-height: calc(100% - 60px); object-fit: contain; box-shadow: 0 0 30px rgba(0,0,0,0.5); cursor: grab; }
 .modal-col-img img:active { cursor: grabbing; }
-.modal-col-info { flex: 1; padding: 50px; overflow-y: auto; background-color: var(--bg-color); }
-#modal-titulo { font-size: 2.5rem; line-height: 1.1; margin-top: 0; font-family: var(--font-title); }
-.section-transcricao { background: #f4efeb; padding: 20px; border-left: 3px solid var(--accent); margin-bottom: 30px; font-family: 'Cormorant Garamond', serif; font-size: 1.2rem; font-style: italic; }
-.section-descricao { background: #fff; padding: 20px; border-radius: 4px; margin-bottom: 30px; border: 1px solid rgba(0,0,0,0.05); }
-.narrate-btn { background: transparent; border: 1px solid var(--accent); border-radius: 30px; padding: 8px 20px; font-size: 0.8rem; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; color: var(--accent); margin-top: 10px; }
-.close-modal-btn { position: absolute; top: 20px; right: 30px; font-size: 2.5rem; background: none; border: none; cursor: pointer; color: var(--text-color); opacity: 0.5; }
-.zoom-controls { position: absolute; bottom: 20px; right: 20px; display: flex; gap: 10px; z-index: 10; }
-.zoom-controls button { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.3); color: white; width: 35px; height: 35px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-.nav-btn { position: absolute; top: 50%; transform: translateY(-50%); background: transparent; color: white; border: 1px solid rgba(255,255,255,0.2); width: 50px; height: 50px; border-radius: 50%; font-size: 1.5rem; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 10; }
-.nav-btn.prev { left: 20px; } .nav-btn.next { right: 20px; }
-.photo-counter { margin-top: 15px; color: #999; font-size: 0.9rem; }
-
-/* Rodapé */
-footer { text-align: center; padding: 50px; color: var(--text-light); margin-top: 50px; border-top: 1px solid var(--line-color); background: var(--bg-color); position: relative; z-index: 2; }
-
-/* RESPONSIVIDADE (Mobile) */
-@media (max-width: 800px) {
-    /* No mobile a linha vai para a esquerda */
-    .timeline::before { left: 20px; }
-    
-    .year-marker { text-align: left; margin: 40px 0; padding-left: 5px; }
-    
-    .timeline-card { width: 100%; float: none; text-align: left !important; margin-bottom: 50px; padding-left: 60px; }
-    .timeline-card:nth-child(odd), .timeline-card:nth-child(even) { text-align: left; }
-    
-    /* Bolinha alinhada à esquerda */
-    .timeline-card::after { left: 14px; right: auto; background: var(--accent); } 
-    .timeline-card:nth-child(odd)::after, .timeline-card:nth-child(even)::after { left: 14px; }
-
-    .modal-window { flex-direction: column; height: 100vh; width: 100%; }
-    .modal-col-img { height: 40%; padding: 10px; }
-    .modal-col-info { height: 60%; padding: 20px; }
-    .close-modal-btn { color: white; top: 10px; right: 10px; }
-}
+.modal

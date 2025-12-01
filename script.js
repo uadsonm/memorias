@@ -16,6 +16,7 @@ const db = getFirestore(app);
 
 document.addEventListener('DOMContentLoaded', async function() {
     
+    // Entrada Suave
     setTimeout(() => { document.body.classList.remove('page-loading'); }, 100);
 
     let imagensAtuais = [], indiceFotoAtual = 0, vozSelecionada = null, zoomLevel = 1;
@@ -30,6 +31,8 @@ document.addEventListener('DOMContentLoaded', async function() {
             const querySnapshot = await getDocs(collection(db, "diarios"));
             let lista = [];
             querySnapshot.forEach((doc) => lista.push(doc.data()));
+            
+            // Ordenação
             lista.sort((a, b) => new Date(a.data) - new Date(b.data));
             window.listaDiariosGlobal = lista;
 
@@ -50,15 +53,11 @@ document.addEventListener('DOMContentLoaded', async function() {
                     ultimoAno = anoAtual;
                 }
 
+                // INSERIR CARD
                 const article = document.createElement('article');
                 article.className = 'timeline-card';
                 const imgUrl = converterLinkDrive(item.imagem);
-                let iconHtml = (item.imagem2) ? `<div class="multi-icon"><span class="material-icons">collections</span></div>` : "";
-
-                // Margem aleatória para dar ritmo orgânico (entre 50px e 120px)
-                // Isso mantem a ideia de "não padrão" mas sem quebrar a linha
-                const randomMargin = Math.floor(Math.random() * (120 - 50 + 1) + 50);
-                article.style.marginBottom = `${randomMargin}px`;
+                let iconHtml = (item.imagem2 && item.imagem2.trim() !== "") ? `<div class="multi-icon"><span class="material-icons">collections</span></div>` : "";
 
                 article.innerHTML = `
                     <div class="card-header"><span class="card-date">${formatarDataExtenso(item.data)}</span></div>
@@ -73,10 +72,22 @@ document.addEventListener('DOMContentLoaded', async function() {
                 timeline.appendChild(article);
             });
 
+            // Ativa animação de entrada (Fade In simples)
+            setTimeout(() => {
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) entry.target.classList.add('visible');
+                    });
+                }, { threshold: 0.1 });
+                document.querySelectorAll('.timeline-card').forEach(el => observer.observe(el));
+            }, 100);
+
         } catch (e) { console.error(e); timeline.innerHTML = "<p style='text-align:center; color:red'>Erro ao carregar.</p>"; }
     }
 
-    // --- FUNÇÕES UTILITÁRIAS ---
+    // --- FUNÇÕES DE MODAL, ZOOM E DRAG (MANTIDAS) ---
+    // (Copie abaixo as funções utilitárias que já funcionavam)
+    
     function converterLinkDrive(link) {
         if (!link) return "";
         link = link.trim();

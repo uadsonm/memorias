@@ -3,48 +3,50 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestão - Memórias</title>
+    <title>Gestão - Memórias em Traços</title>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600&family=Lato:wght@300;400&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
-<body style="background-image: none;"> <div class="container">
-        <div id="login-screen" class="box" style="max-width: 400px; margin: 100px auto;">
-            <h2 style="text-align: center;">🔐 Acesso Restrito</h2>
-            <input type="text" id="user" placeholder="Usuário" style="margin-bottom: 10px;">
-            <input type="password" id="pass" placeholder="Senha" style="margin-bottom: 20px;">
-            <button onclick="logar()" class="btn-primary" style="width: 100%;">Entrar</button>
+<body class="admin-body"> <div class="container">
+        <div id="login-screen" class="box" style="max-width: 400px; margin: 100px auto; text-align: center;">
+            <h2>🔐 Acesso Restrito</h2>
+            <input type="text" id="user" placeholder="Usuário">
+            <input type="password" id="pass" placeholder="Senha">
+            <button onclick="logar()" class="btn-primary" style="width:100%">Entrar</button>
         </div>
 
         <div id="admin-screen" class="hidden">
-            <div class="box admin-header">
-                <h2>Nova Memória</h2>
-                <div class="drive-alert">⚠️ Use imagens "Públicas" do Google Drive.</div>
+            <div class="box">
+                <h2 id="form-title">Nova Memória</h2>
+                <input type="hidden" id="edit-id" value="">
 
-                <label style="font-weight: bold; display: block; margin-top: 15px;">Link Imagem 1 (Principal)</label>
-                <input type="text" id="imgLink" placeholder="Cole o link do Drive">
+                <div class="drive-alert">⚠️ Use imagens do Google Drive com acesso "Público".</div>
+
+                <label style="display:block; margin-top:15px; font-weight:bold;">Link Imagem 1 (Principal)</label>
+                <input type="text" id="imgLink">
                 
-                <label style="font-weight: bold; display: block; margin-top: 15px;">Link Imagem 2 (Opcional)</label>
-                <input type="text" id="imgLink2" placeholder="Verso ou detalhe">
+                <label style="display:block; margin-top:15px; font-weight:bold;">Link Imagem 2 (Opcional)</label>
+                <input type="text" id="imgLink2">
                 
-                <label style="font-weight: bold; display: block; margin-top: 15px;">Data</label>
+                <label style="display:block; margin-top:15px; font-weight:bold;">Data</label>
                 <input type="date" id="data">
                 
-                <label style="font-weight: bold; display: block; margin-top: 15px;">Título</label>
+                <label style="display:block; margin-top:15px; font-weight:bold;">Título</label>
                 <input type="text" id="titulo">
                 
-                <label style="font-weight: bold; display: block; margin-top: 15px;">Transcrição</label>
+                <label style="display:block; margin-top:15px; font-weight:bold;">Transcrição</label>
                 <textarea id="transcricao" rows="4"></textarea>
                 
-                <label style="font-weight: bold; display: block; margin-top: 15px;">Contexto</label>
+                <label style="display:block; margin-top:15px; font-weight:bold;">Contexto</label>
                 <textarea id="descricao" rows="4"></textarea>
 
-                <div style="margin-top: 20px; display: flex; gap: 10px;">
+                <div style="margin-top:20px; display:flex; gap:10px;">
                     <button onclick="salvarNoFirebase()" class="btn-primary" id="btn-save">💾 Salvar na Nuvem</button>
-                    <button onclick="cancelarEdicao()" id="btn-cancel" style="background:#999; color:white; padding:12px 30px; border:none; display:none;">Cancelar</button>
+                    <button onclick="cancelarEdicao()" id="btn-cancel" style="background:#999; color:white; border:none; padding:12px 25px; border-radius:4px; display:none;">Cancelar</button>
                 </div>
-                <p id="status" style="text-align:center; color: var(--accent); font-weight:bold; margin-top:10px;"></p>
+                <p id="status" style="text-align:center; color:green; margin-top:10px;"></p>
             </div>
 
             <div class="box">
@@ -56,7 +58,7 @@
                     </table>
                 </div>
                 <br>
-                <button onclick="sair()" style="background: var(--text-light); color:white; padding: 10px 20px; border:none;">Sair</button>
+                <button onclick="sair()" style="background:#786a60; color:white; border:none; padding:10px 20px; border-radius:4px;">Sair</button>
                 <a href="galeria.html" target="_blank" style="float: right; margin-top: 10px; color: var(--accent); font-weight: bold;">Ver Galeria ➜</a>
             </div>
         </div>
@@ -66,7 +68,7 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // SUAS CHAVES (Memorias-Final)
+        // COPIE SUAS CHAVES DO SCRIPT ANTERIOR E COLE AQUI
         const firebaseConfig = {
             apiKey: "AIzaSyAJA22Ozc0EOHMAlVBr7TBnR6nHuyEHenA",
             authDomain: "memorias-final.firebaseapp.com",
