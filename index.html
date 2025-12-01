@@ -10,44 +10,33 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
-<body class="intro-body"> <main class="intro-wrapper">
-        <header class="intro-header fade-in-scale">
+<body class="intro-body">
+    <main class="intro-wrapper">
+        <header class="intro-header fade-in">
             <span class="logo-small">Exposição Digital</span>
             <h1>Memórias em Traços</h1>
             <div class="separator-ornament"></div>
         </header>
 
-        <section class="intro-text fade-in-scale" style="animation-delay: 0.3s">
+        <section class="intro-text fade-in">
             <h2>A Guardiã das Memórias</h2>
-            <p>
-                Esta exposição é dedicada a uma mulher nordestina, de fibra e fé, cujas mãos não apenas trabalharam a terra e cuidaram da família, mas também seguraram firmemente a caneta por décadas.
-            </p>
+            <p>Esta exposição é dedicada a uma mulher nordestina, de fibra e fé, cujas mãos não apenas trabalharam a terra e cuidaram da família, mas também seguraram firmemente a caneta por décadas.</p>
         </section>
 
-        <section class="intro-text fade-in-scale" style="animation-delay: 0.6s">
+        <section class="intro-text fade-in">
             <h2>O Desafio do Traço</h2>
-            <p>
-                Com a chegada do Parkinson, a firmeza de suas mãos foi desafiada. Mas o que você verá a seguir não é apenas um registro clínico. É a prova visual de uma resistência.
-            </p>
+            <p>Com a chegada do Parkinson, a firmeza de suas mãos foi desafiada. Mas o que você verá a seguir não é apenas um registro clínico. É a prova visual de uma resistência.</p>
         </section>
 
-        <div class="intro-action fade-in-scale" style="animation-delay: 0.9s">
-            <a href="galeria.html" id="btn-entrar" class="enter-btn">
+        <div class="intro-action fade-in">
+            <a href="galeria.html" class="enter-btn">
                 Entrar na Exposição <span class="material-icons">arrow_forward</span>
             </a>
         </div>
     </main>
 
-    <footer class="intro-footer fade-in-scale" style="animation-delay: 1.2s;">
+    <footer class="intro-footer fade-in">
         <p>Recomendamos o uso de fones de ouvido para a áudio-descrição.</p>
     </footer>
-
-    <script>
-        document.getElementById('btn-entrar').addEventListener('click', function(e) {
-            e.preventDefault();
-            document.body.classList.add('fade-out');
-            setTimeout(function() { window.location.href = "galeria.html"; }, 800);
-        });
-    </script>
 </body>
 </html>

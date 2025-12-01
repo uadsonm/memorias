@@ -10,7 +10,7 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
-<body class="page-loading">
+<body>
 
     <header class="accessibility-bar">
         <div class="logo">Memórias em Traços</div>
@@ -29,20 +29,13 @@
         </section>
 
         <section id="timeline" class="timeline">
-            <svg id="ink-canvas" class="ink-canvas">
-                <path id="ink-path" class="ink-path" d="" />
-                <g id="roots-group"></g>
-            </svg>
-
-            <div id="timeline-content" class="timeline-content">
-                <p style="text-align: center; margin-top:50px;">Carregando memórias...</p>
-            </div>
+            <p style="text-align: center; margin-top:50px;">Carregando memórias...</p>
         </section>
     </main>
 
     <div id="image-modal" class="modal-overlay hidden" onclick="fecharModal(event)">
         <button class="close-modal-btn" onclick="fecharModal(event, true)">×</button>
-        <div class="modal-window fade-in-scale" onclick="event.stopPropagation()"> 
+        <div class="modal-window fade-in" onclick="event.stopPropagation()"> 
             <div class="modal-col-img">
                 <button id="prev-btn" class="nav-btn prev hidden" onclick="mudarFoto(-1)">❮</button>
                 <img id="modal-img" src="" alt="Diário">
@@ -67,9 +60,6 @@
     <div vw class="enabled"><div vw-access-button class="active"></div><div vw-plugin-wrapper><div class="vw-plugin-top-wrapper"></div></div></div>
     <script src="https://vlibras.gov.br/app/vlibras-plugin.js"></script>
     <script>new window.VLibras.Widget('https://vlibras.gov.br/app');</script>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
 
     <script type="module" src="script.js"></script>
 </body>
