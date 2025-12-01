@@ -1,163 +1,100 @@
-/* --- 1. CONFIGURAÇÕES GERAIS (GLOBAL) --- */
-:root {
-    --bg-color: #e8e0d5;       /* Argila Seca */
-    --card-bg: #fdfbf7;        /* Papel Off-white */
-    --text-color: #4a3b32;     /* Marrom Café */
-    --text-light: #786a60;     /* Marrom Suave */
-    --accent: #a65e44;         /* Terracota */
-    --line-color: #c4b4a6;     /* Linha da timeline */
-    --font-title: 'Cormorant Garamond', serif;
-    --font-body: 'Lato', sans-serif;
-    --font-hand: 'Caveat', cursive;
-}
+/* --- ATUALIZAÇÃO NO ARQUIVO STYLE.CSS --- */
 
-* { box-sizing: border-box; }
-
-body {
-    font-family: var(--font-body);
-    background-color: var(--bg-color);
-    color: var(--text-color);
-    margin: 0;
-    line-height: 1.8;
-    /* Textura de Papel */
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.08'/%3E%3C/svg%3E");
-    background-attachment: fixed;
-    overflow-x: hidden;
-}
-
-img { max-width: 100%; height: auto; display: block; }
-
-/* Transições */
-body.fade-out { opacity: 0; transition: opacity 0.8s ease; }
-body.page-loading { opacity: 0; transition: opacity 1s ease; }
-@keyframes softFadeIn { from { opacity: 0; } to { opacity: 1; } }
-.fade-in-scale { animation: softFadeIn 0.6s ease-in-out forwards; }
-
-/* Botões Globais */
-button, .btn-primary, .enter-btn { cursor: pointer; transition: all 0.3s ease; font-family: var(--font-body); }
-
-/* --- 2. CABEÇALHO (Apenas para Galeria) --- */
-.accessibility-bar {
-    position: fixed; top: 0; width: 100%; height: 80px;
-    background: rgba(232, 224, 213, 0.95); backdrop-filter: blur(8px);
-    border-bottom: 1px solid rgba(74, 59, 50, 0.1);
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 0 5%; z-index: 1000; box-shadow: 0 4px 20px rgba(74, 59, 50, 0.05);
-}
-.logo { font-family: var(--font-title); font-weight: 700; font-size: 1.8rem; color: var(--text-color); font-style: italic; }
-.a11y-controls button { background: transparent; border: 1px solid var(--text-light); width: 35px; height: 35px; border-radius: 50%; cursor: pointer; color: var(--text-color); margin-left: 5px; }
-
-/* --- 3. INTRODUÇÃO (index.html) --- */
-body.intro-body {
-    height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 20px;
-}
-.intro-wrapper { max-width: 700px; position: relative; z-index: 2; animation: softFadeIn 1s ease-out; }
-.intro-header h1 { font-family: var(--font-title); font-size: 4.5rem; color: var(--accent); margin: 0; line-height: 1; font-style: italic; }
-.logo-small { text-transform: uppercase; letter-spacing: 4px; font-size: 0.8rem; margin-bottom: 15px; color: var(--text-light); }
-.intro-text h2 { font-family: var(--font-hand); font-size: 2.5rem; color: var(--accent); margin-bottom: 15px; margin-top: 30px; }
-.intro-text p { font-family: var(--font-title); font-size: 1.5rem; margin-bottom: 20px; line-height: 1.4; }
-.enter-btn {
-    margin-top: 40px; background-color: var(--text-color); color: #fff; padding: 15px 50px;
-    text-decoration: none; text-transform: uppercase; letter-spacing: 2px; font-weight: bold;
-    display: inline-flex; align-items: center; gap: 10px; border-radius: 2px;
-}
-.enter-btn:hover { background-color: var(--accent); transform: translateY(-3px); }
-.intro-footer { position: absolute; bottom: 30px; width: 100%; text-align: center; font-size: 0.9rem; color: var(--text-light); opacity: 0.7; }
-
-/* --- 4. GALERIA & TIMELINE ESTATICA (galeria.html) --- */
-/* Só aplica padding no topo se não for intro nem admin */
-body:not(.intro-body):not(.admin-body) { padding-top: 90px; }
-
-.container { max-width: 900px; margin: 0 auto; padding: 40px 20px; position: relative; }
-.intro-section { text-align: center; margin-bottom: 60px; }
-.intro-section h1 { font-family: var(--font-title); font-size: 4rem; color: var(--accent); margin: 0; line-height: 1; }
-.separator-ornament { width: 80px; height: 3px; background: var(--text-light); margin: 20px auto; opacity: 0.3; }
-.instruction-box { display: inline-flex; align-items: center; gap: 10px; background: rgba(255, 255, 255, 0.5); border: 1px solid var(--line-color); padding: 8px 20px; border-radius: 4px; margin-top: 30px; font-size: 0.9rem; }
-
-/* TIMELINE (CORRIGIDA) */
-.timeline { position: relative; padding: 40px 0; margin-top: 20px; }
-
-/* Linha Central */
-.timeline::before {
-    content: ''; position: absolute; top: 0; bottom: 0; left: 50%; width: 2px;
-    background-color: var(--line-color); transform: translateX(-50%); z-index: 0;
-}
-
-/* Divisor de Ano */
-.year-marker {
-    position: relative; z-index: 2; text-align: center;
-    margin: 60px 0 80px 0; clear: both; width: 100%; display: block;
-}
-.year-marker span {
-    background-color: var(--accent); color: #fff; font-family: var(--font-title);
-    font-size: 2rem; font-weight: bold; font-style: italic; padding: 8px 30px;
-    border-radius: 50px; box-shadow: 0 4px 15px rgba(166, 94, 68, 0.3);
-    border: 4px solid var(--bg-color);
-}
-
-/* Cards */
+/* CARDS */
 .timeline-card {
-    background: var(--card-bg); width: 45%; padding: 30px;
-    position: relative; margin-bottom: 80px;
+    background: var(--card-bg);
+    width: 45%; /* O card ocupa 45% da tela */
+    padding: 30px;
+    position: relative;
+    margin-bottom: 80px;
     box-shadow: 0 10px 30px rgba(74, 59, 50, 0.08);
-    border-radius: 2px; border: 1px solid rgba(0,0,0,0.02);
-    z-index: 1; opacity: 0; transform: translateY(30px);
+    border-radius: 2px;
+    border: 1px solid rgba(0,0,0,0.02);
+    z-index: 1;
+    
+    opacity: 0; transform: translateY(30px);
     transition: opacity 0.8s ease, transform 0.8s ease;
 }
+
 .timeline-card.visible { opacity: 1; transform: translateY(0); }
 
-/* Posicionamento Zig-Zag Correto */
+/* Lado Esquerdo e Direito */
 .timeline-card:nth-child(odd) { float: left; clear: right; text-align: right; }
 .timeline-card:nth-child(even) { float: right; clear: left; text-align: left; }
 
-/* Bolinha de Conexão */
+/* --- A BOLINHA (MARCADOR) --- */
 .timeline-card::after {
-    content: ''; position: absolute; width: 14px; height: 14px;
-    background: var(--bg-color); border: 3px solid var(--accent);
-    top: 40px; border-radius: 50%; z-index: 2;
+    content: '';
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    background-color: var(--bg-color); /* Miolo da cor do fundo */
+    border: 3px solid var(--accent);   /* Borda da cor do destaque */
+    top: 40px; /* Alinhamento vertical */
+    border-radius: 50%;
+    z-index: 2;
+    box-shadow: 0 0 5px rgba(0,0,0,0.1);
 }
-.timeline-card:nth-child(odd)::after { right: -12.4%; } 
-.timeline-card:nth-child(even)::after { left: -12.4%; }
 
-/* Limpa Float (Essencial para não bugar) */
+/* --- O CÁLCULO EXATO PARA CENTRALIZAR --- */
+/*
+   Explicação: O card tem 45%. A linha está em 50%.
+   A diferença é 5%. 
+   5% de 45% é aproximadamente 11.11%.
+   Subtraímos 7px (metade da bolinha) para centralizar perfeito.
+*/
+
+.timeline-card:nth-child(odd)::after {
+    right: calc(-11.11% - 9px); /* Centraliza na direita */
+} 
+
+.timeline-card:nth-child(even)::after {
+    left: calc(-11.11% - 9px); /* Centraliza na esquerda */
+}
+
+/* PEQUENA LINHA CONECTORA (OPCIONAL - Fica bonito) */
+/* Isso cria um tracinho ligando o card até a bolinha */
+.timeline-card::before {
+    content: '';
+    position: absolute;
+    top: 45px;
+    width: 11.11%; /* Preenche o espaço vazio */
+    height: 1px;
+    background-color: var(--line-color);
+    opacity: 0.5;
+    z-index: 1;
+}
+
+.timeline-card:nth-child(odd)::before {
+    right: -11.11%; /* Joga o braço para a direita */
+}
+
+.timeline-card:nth-child(even)::before {
+    left: -11.11%; /* Joga o braço para a esquerda */
+}
+
+/* Limpa Float */
 .timeline::after { content: ""; display: table; clear: both; }
 
-/* Elementos Internos do Card */
-.img-wrapper { background: #fff; padding: 10px; cursor: pointer; position: relative; margin-top: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-.img-wrapper:hover { transform: scale(1.02); }
-.diary-img { filter: sepia(10%) contrast(1.1); }
-.zoom-hint { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(74, 59, 50, 0.9); color: white; padding: 8px 20px; font-size: 0.8rem; opacity: 0; transition: 0.3s; pointer-events: none; }
-.img-wrapper:hover .zoom-hint { opacity: 1; }
-.multi-icon { position: absolute; bottom: 10px; right: 10px; background: var(--accent); color: white; padding: 4px; border-radius: 4px; display: flex; }
-.card-date { font-family: var(--font-hand); font-size: 1.5rem; color: var(--accent); font-weight: 700; display: block;}
-.timeline-card h2 { font-family: var(--font-title); font-size: 1.8rem; margin: 5px 0; line-height: 1.2; }
+/* Responsividade (Mobile) */
+@media (max-width: 800px) {
+    .timeline::before { left: 20px; } /* Linha vai pra esquerda */
+    
+    .timeline-card { 
+        width: 100%; 
+        float: none; 
+        text-align: left !important; 
+        margin-bottom: 50px; 
+        padding-left: 60px; /* Espaço para a linha */
+    }
+    
+    /* Remove braço conector no mobile */
+    .timeline-card::before { display: none; }
 
-/* --- 5. PAINEL ADMIN (RECUPERADO) --- */
-.admin-body { padding: 40px 20px; }
-.box {
-    background: var(--card-bg); padding: 40px; border-radius: 4px; 
-    box-shadow: 0 10px 30px rgba(0,0,0,0.05); margin-bottom: 30px; 
-    border: 1px solid var(--line-color);
+    /* Ajusta bolinha para a esquerda no mobile */
+    .timeline-card::after { 
+        left: 14px !important; 
+        right: auto !important;
+        background-color: var(--accent); /* Bolinha cheia no mobile */
+    } 
 }
-.admin-header h2, #form-title { color: var(--accent); margin-top: 0; border-bottom: 2px solid rgba(0,0,0,0.05); padding-bottom: 15px; }
-input, textarea, select {
-    width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid var(--line-color);
-    border-radius: 4px; background: #fff; font-family: var(--font-body);
-}
-.btn-primary { background-color: var(--text-color); color: #fff; border: none; padding: 12px 25px; border-radius: 4px; }
-.btn-primary:hover { background-color: var(--accent); }
-.drive-alert { font-size: 0.9rem; color: var(--accent); background: rgba(166, 94, 68, 0.1); padding: 15px; border-radius: 4px; margin-bottom: 20px; border-left: 3px solid var(--accent); }
-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-th { text-align: left; padding: 15px; border-bottom: 2px solid var(--line-color); color: var(--text-color); }
-td { text-align: left; padding: 15px; border-bottom: 1px solid var(--line-color); vertical-align: middle; }
-.btn-danger { background-color: #a64444; color: white; padding: 8px 12px; border: none; border-radius: 2px; }
-.btn-edit { background-color: #d4a373; color: white; padding: 8px 12px; border: none; border-radius: 2px; }
-
-/* --- 6. MODAL & RODAPÉ --- */
-.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(43, 36, 32, 0.98); z-index: 2000; display: flex; justify-content: center; align-items: center; }
-.hidden { display: none !important; }
-.modal-window { background: var(--bg-color); width: 95%; max-width: 1200px; height: 90vh; display: flex; box-shadow: 0 0 50px rgba(0,0,0,0.5); animation: softFadeIn 0.5s ease-out; }
-.modal-col-img { flex: 1.8; background: #1f1a17; padding: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; overflow: hidden; }
-.modal-col-img img { max-width: 100%; max-height: calc(100% - 60px); object-fit: contain; box-shadow: 0 0 30px rgba(0,0,0,0.5); cursor: grab; }
-.modal-col-img img:active { cursor: grabbing; }
-.modal
