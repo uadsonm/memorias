@@ -1,6 +1,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
+// SUAS CHAVES DO FIREBASE
 const firebaseConfig = {
     apiKey: "AIzaSyAJA22Ozc0EOHMAlVBr7TBnR6nHuyEHenA",
     authDomain: "memorias-final.firebaseapp.com",
@@ -15,6 +16,8 @@ const db = getFirestore(app);
 
 document.addEventListener('DOMContentLoaded', async function() {
     
+    setTimeout(() => { document.body.classList.remove('page-loading'); }, 100);
+
     let imagensAtuais = [], indiceFotoAtual = 0, vozSelecionada = null, zoomLevel = 1;
     let isDragging = false, startX = 0, startY = 0, translateX = 0, translateY = 0;
     window.listaDiariosGlobal = []; 
@@ -37,9 +40,11 @@ document.addEventListener('DOMContentLoaded', async function() {
 
             lista.forEach((item, index) => {
                 const anoAtual = item.data.split('-')[0];
+                
+                // INSERIR DIVISOR DE ANO
                 if (anoAtual !== ultimoAno) {
                     const divisor = document.createElement('div');
-                    divisor.className = 'year-divider';
+                    divisor.className = 'year-marker';
                     divisor.innerHTML = `<span>${anoAtual}</span>`;
                     timeline.appendChild(divisor);
                     ultimoAno = anoAtual;
@@ -49,6 +54,11 @@ document.addEventListener('DOMContentLoaded', async function() {
                 article.className = 'timeline-card';
                 const imgUrl = converterLinkDrive(item.imagem);
                 let iconHtml = (item.imagem2) ? `<div class="multi-icon"><span class="material-icons">collections</span></div>` : "";
+
+                // Margem aleatória para dar ritmo orgânico (entre 50px e 120px)
+                // Isso mantem a ideia de "não padrão" mas sem quebrar a linha
+                const randomMargin = Math.floor(Math.random() * (120 - 50 + 1) + 50);
+                article.style.marginBottom = `${randomMargin}px`;
 
                 article.innerHTML = `
                     <div class="card-header"><span class="card-date">${formatarDataExtenso(item.data)}</span></div>
@@ -62,16 +72,6 @@ document.addEventListener('DOMContentLoaded', async function() {
                 `;
                 timeline.appendChild(article);
             });
-
-            // Ativar Observer para Fade In simples
-            setTimeout(() => {
-                const observer = new IntersectionObserver((entries) => {
-                    entries.forEach(entry => {
-                        if (entry.isIntersecting) entry.target.classList.add('visible');
-                    });
-                }, { threshold: 0.1 });
-                document.querySelectorAll('.timeline-card').forEach(el => observer.observe(el));
-            }, 100);
 
         } catch (e) { console.error(e); timeline.innerHTML = "<p style='text-align:center; color:red'>Erro ao carregar.</p>"; }
     }
