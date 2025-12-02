@@ -1,7 +1,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-// SUAS CHAVES DO FIREBASE
+// SUAS CHAVES (MEMORIAS-FINAL)
 const firebaseConfig = {
     apiKey: "AIzaSyAJA22Ozc0EOHMAlVBr7TBnR6nHuyEHenA",
     authDomain: "memorias-final.firebaseapp.com",
@@ -31,8 +31,6 @@ document.addEventListener('DOMContentLoaded', async function() {
             const querySnapshot = await getDocs(collection(db, "diarios"));
             let lista = [];
             querySnapshot.forEach((doc) => lista.push(doc.data()));
-            
-            // Ordenação
             lista.sort((a, b) => new Date(a.data) - new Date(b.data));
             window.listaDiariosGlobal = lista;
 
@@ -53,11 +51,14 @@ document.addEventListener('DOMContentLoaded', async function() {
                     ultimoAno = anoAtual;
                 }
 
-                // INSERIR CARD
                 const article = document.createElement('article');
                 article.className = 'timeline-card';
                 const imgUrl = converterLinkDrive(item.imagem);
                 let iconHtml = (item.imagem2 && item.imagem2.trim() !== "") ? `<div class="multi-icon"><span class="material-icons">collections</span></div>` : "";
+
+                // Espaçamento aleatório para ficar orgânico (80 a 200px)
+                const randomMargin = Math.floor(Math.random() * (200 - 80 + 1) + 80);
+                article.style.marginBottom = `${randomMargin}px`;
 
                 article.innerHTML = `
                     <div class="card-header"><span class="card-date">${formatarDataExtenso(item.data)}</span></div>
@@ -72,7 +73,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                 timeline.appendChild(article);
             });
 
-            // Ativa animação de entrada (Fade In simples)
+            // Ativar Observer para Fade In simples
             setTimeout(() => {
                 const observer = new IntersectionObserver((entries) => {
                     entries.forEach(entry => {
@@ -85,9 +86,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         } catch (e) { console.error(e); timeline.innerHTML = "<p style='text-align:center; color:red'>Erro ao carregar.</p>"; }
     }
 
-    // --- FUNÇÕES DE MODAL, ZOOM E DRAG (MANTIDAS) ---
-    // (Copie abaixo as funções utilitárias que já funcionavam)
-    
+    // --- FUNÇÕES UTILITÁRIAS ---
     function converterLinkDrive(link) {
         if (!link) return "";
         link = link.trim();
